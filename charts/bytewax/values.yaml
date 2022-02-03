@@ -1,0 +1,63 @@
+# Default values for bytewax.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: 443066169751.dkr.ecr.us-west-2.amazonaws.com/tiny-dancer
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "alpha-v4"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 2000
+  runAsGroup: 3000
+  runAsNonRoot: true
+  runAsUser: 65532
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+    add:
+    - NET_BIND_SERVICE    
+  readOnlyRootFilesystem: true
+
+service:
+  port: 9999
+
+resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+conf:
+  configmaps:
+    sharedConfigInfo:
+      filenames:

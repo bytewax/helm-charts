@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    {{- include "bytewax.labels" . | nindent 4 }}
+spec:
+  ports:
+  - port: {{ .Values.service.port }}
+    name: worker
+  clusterIP: None
+  selector:
+    {{- include "bytewax.selectorLabels" . | nindent 4 }}
+
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: tiny-dancer
+#   namespace: tiny-dancer
+#   labels:
+#     app: tiny-dancer
+# spec:
+#   ports:
+#   - port: 8080
+#     name: worker
+#   clusterIP: None
+#   selector:
+#     app: tiny-dancer
