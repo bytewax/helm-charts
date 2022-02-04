@@ -2,13 +2,11 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
-
 image:
   repository: 443066169751.dkr.ecr.us-west-2.amazonaws.com/tiny-dancer
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "alpha-v4"
+  tag: "alpha-v6"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -57,7 +55,75 @@ tolerations: []
 
 affinity: {}
 
-conf:
-  configmaps:
-    sharedConfigInfo:
-      filenames:
+configuration:
+  pythonFileName: "pyexamples/pagerank.py"
+  processesCount: 1
+  workersPerProcess: 1
+  configMap:
+    create: true
+    customName:  
+    files:
+      pattern: 
+      tarName: "pyexamples.tar"
+
+## Configuration examples ##
+#
+# 1. Configmap created manually including basic.py file code and executing that file
+# configuration:
+#   pythonFileName: "basic.py"
+#   processesCount: 1
+#   workersPerProcess: 1
+#   configMap:
+#     create: false
+#     customName: "my-configmap"   
+#     files:
+#       pattern: 
+#       tarName:
+#
+# 2. Configmap created manually including files.tar and executing basic.py file
+# configuration:
+#   pythonFileName: "basic.py"
+#   processesCount: 1
+#   workersPerProcess: 1
+#   configMap:
+#     create: false
+#     customName: "conf-d"   
+#     files:
+#       pattern: 
+#       tarName: "files.tar"
+#
+# 3. Configmap created by helm including pyexamples/basic.py file and executing it
+# configuration:
+#   pythonFileName: "basic.py"
+#   processesCount: 1
+#   workersPerProcess: 1
+#   configMap:
+#     create: true
+#     customName: 
+#     files:
+#       pattern: "pyexamples/basic.py"
+#       tarName: 
+#
+# 4. Configmap created by helm including all the files in pyexamples directory and executing basic.py
+# configuration:
+#   pythonFileName: "basic.py"
+#   processesCount: 1
+#   workersPerProcess: 1
+#   configMap:
+#     create: true
+#     customName: 
+#     files:
+#       pattern: "pyexamples/*" 
+#       tarName:
+#
+# 5. Configmap created by helm including pyexamples.tar file and executing pyexamples/pagerank.py 
+# configuration:
+#   pythonFileName: "pyexamples/pagerank.py"  # in this example, the tar file includes "pyexamples" directory
+#   processesCount: 1
+#   workersPerProcess: 1
+#   configMap:
+#     create: true
+#     customName:  
+#     files:
+#       pattern: 
+#       tarName: "pyexamples.tar"

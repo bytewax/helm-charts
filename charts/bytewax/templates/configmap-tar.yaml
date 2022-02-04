@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ .Release.Name }}-tar
-data:
-  {{- (.Files.Glob "py-files.tar").AsConfig | nindent 2 }}

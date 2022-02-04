@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "bytewax.labels" . | nindent 4 }}  
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.configuration.processesCount }}
   selector:
     matchLabels:
       {{- include "bytewax.selectorLabels" . | nindent 6 }}
@@ -33,7 +33,7 @@ spec:
           {{- toYaml .Values.securityContext | nindent 12 }}      
         env:
         - name: BYTEWAX_REPLICAS
-          value: "{{ .Values.replicaCount }}"
+          value: "{{ .Values.configuration.processesCount }}"
         image: busybox
         command:
         - sh
@@ -52,15 +52,19 @@ spec:
           # Copy python files to working directory
           cp /tmp/bytewax/. /var/bytewax -R
           cd /var/bytewax
-          tar -xvf ./py-files.tar
+          tar -xvf *.tar || echo "No tar files found."
         volumeMounts:
         - name: hostfile
           mountPath: /etc/bytewax
         - name: working-directory
           mountPath: /var/bytewax/
-        - name: python-files-tar
-          mountPath: /tmp/bytewax/py-files.tar
-          subPath: py-files.tar
+        - name: python-files          
+{{- if (.Values.configuration.configMap.files.tarName) }}
+          mountPath: /tmp/bytewax/{{ .Values.configuration.configMap.files.tarName }}
+          subPath: {{ .Values.configuration.configMap.files.tarName }}
+{{- else }}
+          mountPath: /tmp/bytewax/
+{{- end }}
       terminationGracePeriodSeconds: 10
       containers:
       - name: worker    
@@ -76,15 +80,17 @@ spec:
         - name: RUST_BACKTRACE
           value: "full"
         - name: BYTEWAX_PYTHON_FILE_PATH
-          value: "/var/bytewax/basic.py"
+          value: "/var/bytewax/{{ .Values.configuration.pythonFileName }}"
+        - name: BYTEWAX_WORKDIR
+          value: "/var/bytewax"
         - name: BYTEWAX_WORKERS_PER_PROCESS
-          value: "1"
+          value: "{{ .Values.configuration.workersPerProcess }}"
         - name: BYTEWAX_POD_NAME
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
         - name: BYTEWAX_REPLICAS
-          value: "{{ .Values.replicaCount }}"              
+          value: "{{ .Values.configuration.processesCount }}"              
         - name: BYTEWAX_HOSTFILE_PATH
           value: "/etc/bytewax/hostfile.txt"
         - name: BYTEWAX_STATEFULSET_NAME
@@ -103,9 +109,10 @@ spec:
         emptyDir: {}
       - name: python-files
         configMap:
+{{- if (.Values.configuration.configMap.customName) }}
+          name: {{ .Values.configuration.configMap.customName }}
+{{- else }}
           name: {{ .Release.Name }}
-      - name: python-files-tar
-        configMap:
-          name: {{ .Release.Name }}-tar
+{{- end }}
       - name: working-directory
         emptyDir: {}
