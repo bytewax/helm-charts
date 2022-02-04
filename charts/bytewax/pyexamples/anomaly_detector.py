@@ -1,6 +1,6 @@
 import random
 
-import tiny_dancer
+from bytewax import Executor
 
 
 def random_datapoints():
@@ -50,7 +50,7 @@ def inspector(x_mu_sigma_anomalous):
     print(f"x = {x}, mu = {mu:.2f}, sigma = {sigma:.2f}, {is_anomalous}")
     
 
-ec = tiny_dancer.Executor()
+ec = Executor()
 flow = ec.Dataflow(random_datapoints())
 # Think about what semantics you'd want with multiple workers / epochs.
 flow.map(ZTestDetector(2.0))

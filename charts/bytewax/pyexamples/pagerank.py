@@ -1,6 +1,6 @@
 import collections
 
-import tiny_dancer
+import bytewax
 
 
 FIRST_ITERATION = 0
@@ -51,7 +51,7 @@ def sum_to_weight(node_sum):
     return node, updated_weight
 
 
-ec = tiny_dancer.Executor()
+ec = bytewax.Executor()
 flow = ec.Dataflow(read_edges("pyexamples/sample_data/graph.txt"))
 # (parent, child) per edge
 flow.aggregate(set, collect_children)

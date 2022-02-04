@@ -3,10 +3,10 @@
 # Declare variables to be passed into your templates.
 
 image:
-  repository: 443066169751.dkr.ecr.us-west-2.amazonaws.com/tiny-dancer
+  repository: 443066169751.dkr.ecr.us-west-2.amazonaws.com/bytewax
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "alpha-v6"
+  tag: "0.6.0"
 
 imagePullSecrets: []
 nameOverride: ""

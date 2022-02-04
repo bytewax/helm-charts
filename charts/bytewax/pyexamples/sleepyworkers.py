@@ -1,13 +1,13 @@
 import time
 
-import tiny_dancer
+import bytewax
 
 
 def slow(x):
     print("start slow")
     # time.sleep(5)  # Works in parallel.
-    # tiny_dancer.sleep_release_gil(5)  # Works in parallel.
-    tiny_dancer.sleep_keep_gil(5)  # Does not.
+    # bytewax.sleep_release_gil(5)  # Works in parallel.
+    bytewax.sleep_keep_gil(5)  # Does not.
     print("stop slow")
     return x
 
@@ -25,7 +25,7 @@ def output(x):
     return x.replace("in", "out")
 
 
-ec = tiny_dancer.Executor()
+ec = bytewax.Executor()
 flow = ec.Dataflow(enumerate(["in1", "in2", "in3", "in4", "in5"]))
 flow.inspect(print)
 # flow.map(slow)

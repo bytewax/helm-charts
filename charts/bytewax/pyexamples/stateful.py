@@ -1,4 +1,4 @@
-import tiny_dancer
+import bytewax
 
 
 def count_to_10_with_dups():
@@ -66,7 +66,7 @@ class Summer:
         return self._sum
 
 
-ec = tiny_dancer.Executor()
+ec = bytewax.Executor()
 flow = ec.Dataflow(count_to_10_with_dups())
 flow.inspect_epoch(NumberedInspectorTime("Input"))
 flow.filter(DuplicateRemover())

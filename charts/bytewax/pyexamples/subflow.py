@@ -1,6 +1,6 @@
 import collections
 
-import tiny_dancer
+import bytewax
 
 
 def read_lines():
@@ -37,7 +37,7 @@ def inspector(count_count):
     )
 
 
-ec = tiny_dancer.Executor()
+ec = bytewax.Executor()
 flow = ec.Dataflow(read_lines())
 # "at this point we have full sentences as items in the dataflow"
 flow.flat_map(str.split)

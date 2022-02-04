@@ -1,35 +1,37 @@
+import re
 import collections
 
-import tiny_dancer
-from nltk.tokenize import RegexpTokenizer
+import bytewax
 
 
 def file_input():
-    with open("pyexamples/sample_data/wordcount.txt") as lines:
-        for line in lines:
-            yield (1, line)
+    for line in open("sample_data/wordcount.txt", "r").readlines():
+        yield (1, line)
 
 
 def tokenize(x):
-    tokenizer = RegexpTokenizer(r"\w+")
-    return tokenizer.tokenize(x)
+    return re.findall(r'[^\s!,.?":;0-9]+', x)
 
 
-def word_count(acc, words):
+def build_new_accumulator():
+    word_to_count = {}
+    return word_to_count
+
+
+def acc(word_to_count, words):
     for word in words:
-        acc[word] += 1
-    return acc
+        if word not in word_to_count:
+            word_to_count[word] = 0
+        word_to_count[word] += 1
+    return word_to_count
 
 
-ec = tiny_dancer.Executor()
-flow = ec.Dataflow(file_input())
+exec = bytewax.Executor()
+flow = exec.Dataflow(file_input())
+flow.map(lambda x: x.lower())
 flow.flat_map(tokenize)
-flow.filter(lambda x: x != "and")
-flow.exchange(hash)
-flow.accumulate(lambda: collections.defaultdict(int), word_count)
-flow.flat_map(dict.items)
+flow.accumulate(build_new_accumulator, acc)
 flow.inspect(print)
 
-
 if __name__ == "__main__":
-    ec.build_and_run()
+    exec.build_and_run()

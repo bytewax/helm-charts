@@ -1,4 +1,4 @@
-import tiny_dancer
+import bytewax
 
 
 def inp():
@@ -28,7 +28,7 @@ def hax(x):
     return h
 
 
-ec = tiny_dancer.Executor()
+ec = bytewax.Executor()
 flow = ec.Dataflow(inp())
 flow.map(double)
 flow.map(minus_one)

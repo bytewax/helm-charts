@@ -1,4 +1,4 @@
-import tiny_dancer
+import bytewax
 from transformers import pipeline
 
 
@@ -18,7 +18,7 @@ def predict(x):
     return y
 
 
-ec = tiny_dancer.Executor()
+ec = bytewax.Executor()
 flow = ec.Dataflow(gen_input())
 flow.map(str.strip)
 flow.map(predict)

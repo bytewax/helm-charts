@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-import tiny_dancer
+import bytewax
 
 
 @dataclass
@@ -109,7 +109,7 @@ def calc_ctr(search_session):
         return 0.0
 
 
-ec = tiny_dancer.Executor()
+ec = bytewax.Executor()
 # inp() returns (epoch, event) stream where epoch is just event order.
 flow = ec.Dataflow(inp())
 # state_machine() aggregates across epochs by k in (k, v) pairs, so

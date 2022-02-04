@@ -4,7 +4,7 @@ import urllib3
 import collections
 import time
 
-import tiny_dancer
+import bytewax
 
 
 def tick_every(interval_sec):
@@ -43,7 +43,7 @@ def count_edits(acc, server_names):
     return acc
 
 
-ec = tiny_dancer.Executor()
+ec = bytewax.Executor()
 flow = ec.Dataflow(gen_input())
 flow.map(json.loads)
 flow.map(server_name)
