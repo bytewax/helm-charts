@@ -4,7 +4,7 @@ import bytewax
 
 
 def read_lines():
-    with open("pyexamples/sample_data/wordcount.txt") as lines:
+    with open("examples/sample_data/wordcount.txt") as lines:
         for line in lines:
             yield (1, line)
 

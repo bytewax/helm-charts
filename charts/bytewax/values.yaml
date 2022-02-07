@@ -6,7 +6,7 @@ image:
   repository: 443066169751.dkr.ecr.us-west-2.amazonaws.com/bytewax
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.6.0"
+  tag: "0.6.1"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -56,7 +56,7 @@ tolerations: []
 affinity: {}
 
 configuration:
-  pythonFileName: "pyexamples/pagerank.py"
+  pythonFileName: "examples/pagerank.py"
   processesCount: 1
   workersPerProcess: 1
   configMap:
@@ -64,7 +64,7 @@ configuration:
     customName:  
     files:
       pattern: 
-      tarName: "pyexamples.tar"
+      tarName: "examples.tar"
 
 ## Configuration examples ##
 #
@@ -92,7 +92,7 @@ configuration:
 #       pattern: 
 #       tarName: "files.tar"
 #
-# 3. Configmap created by helm including pyexamples/basic.py file and executing it
+# 3. Configmap created by helm including examples/basic.py file and executing it
 # configuration:
 #   pythonFileName: "basic.py"
 #   processesCount: 1
@@ -101,10 +101,10 @@ configuration:
 #     create: true
 #     customName: 
 #     files:
-#       pattern: "pyexamples/basic.py"
+#       pattern: "examples/basic.py"
 #       tarName: 
 #
-# 4. Configmap created by helm including all the files in pyexamples directory and executing basic.py
+# 4. Configmap created by helm including all the files in examples directory and executing basic.py
 # configuration:
 #   pythonFileName: "basic.py"
 #   processesCount: 1
@@ -113,12 +113,12 @@ configuration:
 #     create: true
 #     customName: 
 #     files:
-#       pattern: "pyexamples/*" 
+#       pattern: "examples/*" 
 #       tarName:
 #
-# 5. Configmap created by helm including pyexamples.tar file and executing pyexamples/pagerank.py 
+# 5. Configmap created by helm including examples.tar file and executing examples/pagerank.py 
 # configuration:
-#   pythonFileName: "pyexamples/pagerank.py"  # in this example, the tar file includes "pyexamples" directory
+#   pythonFileName: "examples/pagerank.py"  # in this example, the tar file includes "examples" directory
 #   processesCount: 1
 #   workersPerProcess: 1
 #   configMap:
@@ -126,4 +126,4 @@ configuration:
 #     customName:  
 #     files:
 #       pattern: 
-#       tarName: "pyexamples.tar"
+#       tarName: "examples.tar"

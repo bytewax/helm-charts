@@ -52,7 +52,7 @@ def sum_to_weight(node_sum):
 
 
 ec = bytewax.Executor()
-flow = ec.Dataflow(read_edges("pyexamples/sample_data/graph.txt"))
+flow = ec.Dataflow(read_edges("examples/sample_data/graph.txt"))
 # (parent, child) per edge
 flow.aggregate(set, collect_children)
 # (parent, children) per parent

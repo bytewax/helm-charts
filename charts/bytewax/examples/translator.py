@@ -7,7 +7,7 @@ translator = pipeline("translation_en_to_de")
 
 
 def gen_input():
-    with open("pyexamples/sample_data/lyrics.txt") as lines:
+    with open("examples/sample_data/lyrics.txt") as lines:
         for line in lines:
             yield (1, line)
 
