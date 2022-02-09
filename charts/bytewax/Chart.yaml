@@ -1,7 +1,7 @@
 apiVersion: v2
 name: bytewax
-description: A Helm chart for Kubernetes
+description: A Helm chart for Bytewax
 type: application
-version: 0.1.6
+version: 0.1.7
 appVersion: "0.6.1"
 icon: https://bytewax.io/assets/img/favicon.png
