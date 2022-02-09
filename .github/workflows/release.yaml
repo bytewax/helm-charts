@@ -29,5 +29,6 @@ jobs:
         with:
           charts_dir: charts
           config: cr.yaml
+          charts_repo_url: http://bytewax.io/helm-charts
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
