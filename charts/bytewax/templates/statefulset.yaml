@@ -1,0 +1,118 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    {{- include "bytewax.labels" . | nindent 4 }}  
+spec:
+  replicas: {{ .Values.configuration.processesCount }}
+  selector:
+    matchLabels:
+      {{- include "bytewax.selectorLabels" . | nindent 6 }}
+  serviceName: "{{ .Release.Name }}"
+  podManagementPolicy: "Parallel"
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "bytewax.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "bytewax.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}      
+      initContainers:
+      - name: init-hostfile
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}      
+        env:
+        - name: BYTEWAX_REPLICAS
+          value: "{{ .Values.configuration.processesCount }}"
+        image: busybox
+        command:
+        - sh
+        - "-c"
+        - |
+          set -ex
+          # Generate hostfile.txt.
+          echo "{{ .Release.Name }}-0.{{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}" > /etc/bytewax/hostfile.txt
+          replicas=$(($BYTEWAX_REPLICAS-1))
+          x=1
+          while [ $x -le $replicas ]
+          do
+            echo "{{ .Release.Name }}-$x.{{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}" >> /etc/bytewax/hostfile.txt
+            x=$(( $x + 1 ))
+          done
+          # Copy python files to working directory
+          cp /tmp/bytewax/. /var/bytewax -R
+          cd /var/bytewax
+          tar -xvf *.tar || echo "No tar files found."
+        volumeMounts:
+        - name: hostfile
+          mountPath: /etc/bytewax
+        - name: working-directory
+          mountPath: /var/bytewax/
+        - name: python-files          
+{{- if (.Values.configuration.configMap.files.tarName) }}
+          mountPath: /tmp/bytewax/{{ .Values.configuration.configMap.files.tarName }}
+          subPath: {{ .Values.configuration.configMap.files.tarName }}
+{{- else }}
+          mountPath: /tmp/bytewax/
+{{- end }}
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: worker    
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: ["sh","-c","sh ./entrypoint.sh && sleep 7200"]
+        ports:
+        - containerPort: {{ .Values.service.port }}
+          name: worker
+        env:
+        - name: RUST_LOG
+          value: "librdkafka=debug,rdkafka::client=debug"
+        - name: RUST_BACKTRACE
+          value: "full"
+        - name: BYTEWAX_PYTHON_FILE_PATH
+          value: "/var/bytewax/{{ .Values.configuration.pythonFileName }}"
+        - name: BYTEWAX_WORKDIR
+          value: "/var/bytewax"
+        - name: BYTEWAX_WORKERS_PER_PROCESS
+          value: "{{ .Values.configuration.workersPerProcess }}"
+        - name: BYTEWAX_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: BYTEWAX_REPLICAS
+          value: "{{ .Values.configuration.processesCount }}"              
+        - name: BYTEWAX_HOSTFILE_PATH
+          value: "/etc/bytewax/hostfile.txt"
+        - name: BYTEWAX_STATEFULSET_NAME
+          value: "{{ .Release.Name }}"
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}         
+        volumeMounts:
+        - name: hostfile
+          mountPath: /etc/bytewax
+        - name: working-directory
+          mountPath: /var/bytewax/
+      volumes:
+      - name: hostfile
+        emptyDir: {}
+      - name: python-files
+        configMap:
+{{- if (.Values.configuration.configMap.customName) }}
+          name: {{ .Values.configuration.configMap.customName }}
+{{- else }}
+          name: {{ .Release.Name }}
+{{- end }}
+      - name: working-directory
+        emptyDir: {}
