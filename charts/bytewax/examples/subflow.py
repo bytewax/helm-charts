@@ -1,18 +1,8 @@
 import collections
+import operator
 
 import bytewax
-
-
-def read_lines():
-    with open("examples/sample_data/wordcount.txt") as lines:
-        for line in lines:
-            yield (1, line)
-
-
-def count(acc, xs):
-    for x in xs:
-        acc[x] += 1
-    return acc
+from bytewax import inp
 
 
 # You can define your own functions which add groupings of steps to a
@@ -20,9 +10,8 @@ def count(acc, xs):
 def calc_counts(flow):
     """Add steps to this flow which counts the frequencies of input
     items and emits (item, count) tuples downstream."""
-    flow.exchange(hash)
-    flow.accumulate(lambda: collections.defaultdict(int), count)
-    flow.flat_map(dict.items)
+    flow.map(lambda x: (x, 1))
+    flow.reduce_epoch(operator.add)
 
 
 def get_count(word_count):
@@ -38,7 +27,7 @@ def inspector(count_count):
 
 
 ec = bytewax.Executor()
-flow = ec.Dataflow(read_lines())
+flow = ec.Dataflow(inp.single_batch(open("examples/sample_data/wordcount.txt")))
 # "at this point we have full sentences as items in the dataflow"
 flow.flat_map(str.split)
 # "words"

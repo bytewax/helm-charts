@@ -1,37 +1,34 @@
-import re
 import collections
+import operator
+import re
 
 import bytewax
-
-
-def file_input():
-    for line in open("sample_data/wordcount.txt", "r").readlines():
-        yield (1, line)
+from bytewax import inp
 
 
 def tokenize(x):
     return re.findall(r'[^\s!,.?":;0-9]+', x)
 
 
-def build_new_accumulator():
-    word_to_count = {}
-    return word_to_count
+def initial_count(word):
+    return word, 1
 
 
-def acc(word_to_count, words):
-    for word in words:
-        if word not in word_to_count:
-            word_to_count[word] = 0
-        word_to_count[word] += 1
-    return word_to_count
-
-
-exec = bytewax.Executor()
-flow = exec.Dataflow(file_input())
-flow.map(lambda x: x.lower())
+ec = bytewax.Executor()
+flow = ec.Dataflow(inp.single_batch(open("examples/sample_data/wordcount.txt")))
+# "Here we have full sentences"
 flow.flat_map(tokenize)
-flow.accumulate(build_new_accumulator, acc)
+# "Words"
+flow.map(str.lower)
+# "word"
+flow.filter(lambda x: x != "and")
+# "word_no_and"
+flow.map(initial_count)
+# ("word", 1)
+flow.reduce_epoch(operator.add)
+# ("word", count)
 flow.inspect(print)
 
+
 if __name__ == "__main__":
-    exec.build_and_run()
+    ec.build_and_run()

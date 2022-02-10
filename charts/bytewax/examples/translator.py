@@ -1,28 +1,26 @@
 import bytewax
+from bytewax import inp
 from transformers import pipeline
 
 
-# Load my fancy model translator
 translator = pipeline("translation_en_to_de")
 
 
-def gen_input():
-    with open("examples/sample_data/lyrics.txt") as lines:
-        for line in lines:
-            yield (1, line)
+def predict(en):
+    de = translator(en)[0]["translation_text"]
+    return (en, de)
 
 
-def predict(x):
-    y = translator(x)[0]["translation_text"]
-    print(f"{x} -> {y}")
-    return y
+def inspector(en_de):
+    en, de = en_de
+    print(f"{en} -> {de}")
 
 
 ec = bytewax.Executor()
-flow = ec.Dataflow(gen_input())
+flow = ec.Dataflow(inp.single_batch(open("examples/sample_data/lyrics.txt")))
 flow.map(str.strip)
 flow.map(predict)
-flow.inspect(print)
+flow.inspect(inspector)
 
 
 if __name__ == "__main__":
