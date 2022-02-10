@@ -3,17 +3,6 @@ entries:
   bytewax:
   - apiVersion: v2
     appVersion: 0.6.1
-    created: "2022-02-09T17:51:47.779821247-03:00"
-    description: A Helm chart for Kubernetes
-    digest: 56a61d78684a383057b7674b073303a2897715631fad62b18c3a2fdd2cd5085b
-    icon: https://bytewax.io/assets/img/favicon.png
-    name: bytewax
-    type: application
-    urls:
-    - https://bytewax.github.io/helm-charts/packages/bytewax-0.1.5.tgz
-    version: 0.1.5
-  - apiVersion: v2
-    appVersion: 0.6.1
     created: "2022-02-10T12:23:03.887504931Z"
     description: A Helm chart for Bytewax
     digest: ca9d2f59cc32a71019070139d28ae681a49d0b4affe012147b7dce4e78b9a0c8
