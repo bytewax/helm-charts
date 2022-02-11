@@ -6,7 +6,7 @@ image:
   repository: 443066169751.dkr.ecr.us-west-2.amazonaws.com/bytewax
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.6.1"
+  tag: "0.7.0"
 
 imagePullSecrets: []
 
@@ -62,7 +62,6 @@ affinity: {}
 ##
 ## env:
 ##   ENV_VAR_NAME: value
-
 env: {}
 
 ## "valueFrom" environment variable references that will be added to statefulset pods
@@ -98,16 +97,27 @@ extraSecretMounts: []
   #   readOnly: true
   #   subPath: ""
 
+# Defines additional volume mounts.
+extraVolumeMounts: []
+  # - name: extra-volume-0
+  #   mountPath: /mnt/volume0
+  #   readOnly: true
+  #   existingClaim: volume-claim
+  # - name: extra-volume-1
+  #   mountPath: /mnt/volume1
+  #   readOnly: true
+  #   hostPath: /usr/shared/
+
 configuration:
-  pythonFileName: "examples/pagerank.py"
+  pythonFileName: "basic.py"
   processesCount: 1
   workersPerProcess: 1
   configMap:
     create: true
     customName:  
     files:
-      pattern: 
-      tarName: "examples.tar"
+      pattern: "examples/*"
+      tarName: ""
 
 ## Configuration examples ##
 #

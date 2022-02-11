@@ -68,6 +68,12 @@ spec:
 {{- else }}
           mountPath: /tmp/bytewax/
 {{- end }}
+{{- range .Values.extraVolumeMounts }}
+        - name: {{ .name }}
+          mountPath: {{ .mountPath }}
+          subPath: {{ .subPath | default "" }}
+          readOnly: {{ .readOnly }}
+{{- end }}
       terminationGracePeriodSeconds: 10
       containers:
       - name: worker    
@@ -152,4 +158,16 @@ spec:
       - name: {{ .name }}
         csi: {{- toYaml .csi | nindent 6 }}
 {{- end }}
-{{- end }}        
+{{- end }}
+{{- range .Values.extraVolumeMounts }}
+      - name: {{ .name }}
+        {{- if .existingClaim }}
+        persistentVolumeClaim:
+          claimName: {{ .existingClaim }}
+        {{- else if .hostPath }}
+        hostPath:
+          path: {{ .hostPath }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+{{- end }}

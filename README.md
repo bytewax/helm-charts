@@ -35,8 +35,8 @@ The command removes all the Kubernetes components associated with the chart and 
 
 | Parameter                                 | Description                                   | Default                                                 |
 |-------------------------------------------|-----------------------------------------------|---------------------------------------------------------|
-| `image.repository`                        | Image repository                              | `ghcr.io/bytewax/bytewax`                               |
-| `image.tag`                               | Image tag                                     | `0.6.1`                                                 |
+| `image.repository`                        | Image repository                              | `bytewax/bytewax`                                       |
+| `image.tag`                               | Image tag                                     | `0.7.0`                                                 |
 | `image.pullPolicy`                        | Image pull policy                             | `Always`                                                |
 | `imagePullSecrets`                        | Image pull secrets                            | `[]`                                                    |
 | `serviceAccount.create`                   | Create service account                        | `true`                                                  |
@@ -57,12 +57,13 @@ The command removes all the Kubernetes components associated with the chart and 
 | `envFromSecret`                           | Name of a Kubernetes secret (must be manually created in the same namespace) containing values to be added to the environment. Can be templated | `""` |
 | `envRenderSecret`                         | Sensible environment variables passed to pods and stored as secret | `{}`                               |
 | `extraSecretMounts`                       | Secret mounts to get secrets from files instead of env vars | `[]`                                      |
-| `configuration.pythonFileName`            | Path of the python file to run                | `examples/pagerank.py`                                  |
+| `extraVolumeMounts`                       | Additional volume mounts                      | `[]`                                                    |
+| `configuration.pythonFileName`            | Path of the python file to run                | `basic.py`                                              |
 | `configuration.processesCount`            | Number of concurrent processes to run         | `1`                                                     |
 | `configuration.workersPerProcess`         | Number of workers per process                 | `1`                                                     |
 | `configuration.configMap.create`          | Create a configmap to store python file(s)    | `true`                                                  |
 | `configuration.configMap.customName`      | Configmap which has python file(s) created manually | ``                                                |
-| `configuration.configMap.files.pattern`   | Files to store in the ConfigMap to be created | ``                                                      |
+| `configuration.configMap.files.pattern`   | Files to store in the ConfigMap to be created | `examples/*`                                            |
 | `configuration.configMap.files.tarName`   | Tar file to store in the ConfigMap to be created | ``                                                   |
 
 
@@ -73,7 +74,99 @@ configuration:
   pythonFileName: "basic.py"
   configMap:
     files:
-      pattern: "examples/basic.py"
+      pattern: "examples/*"
+      tarName:
+```
+
+### Example running pagerank.py obtained from a Configmap created by Helm
+
+```yaml
+configuration:
+  pythonFileName: "examples/pagerank.py"
+  configMap:
+    files:
+      pattern: 
+      tarName: "examples.tar"
+```
+
+In this example, we store a tar file in the configmap. This is useful when you need a tree of nested files and directories. 
+
+Following our example, the tar file has this content:
+```console
+├── examples
+│   ├── anomaly_detector.py
+│   ├── basic.py
+│   ├── events_to_parquet.py
+│   ├── pagerank.py
+│   ├── sample_data
+│   │   ├── easy_count.txt
+│   │   ├── graph.txt
+│   │   ├── lyrics.txt
+│   │   └── wordcount.txt
+│   ├── search_session.py
+│   ├── sleepyworkers.py
+│   ├── subflow.py
+│   ├── translator.py
+│   ├── twitter_stream.py
+│   ├── utils
+│   │   ├── fake_events.py
+│   │   ├── __init__.py
+│   │   └── twitter.py
+│   ├── wikistream.py
+│   └── wordcount.py
+```
+So, because that tar file is going to be extracted to the container working directory then the container is going to have that tree available to work with.
+Our `pagerank.py` script opens a file located in `examples/sample_data` as we can see in this portion of its code:
+```python
+ec = bytewax.Executor()
+flow = ec.Dataflow(read_edges("examples/sample_data/graph.txt"))
+```
+
+## How to include your own python code
+
+So far the examples of the `configuration` block described how to use one of the python files already included in the chart.
+We included those files to show you how to use this chart, but of course, you will want to run your own code. You have two ways to accomplish that:
+
+### Install Bytewax chart using a local copy and put your file(s) inside it
+
+In this case, you will need to fetch the Bytewax chart to your machine and copy your python file(s) inside the chart directory.
+Then, you can use the chart settings to generate a Configmap storing your file(s) and run it in the container.
+
+There are the steps to include `my-code.py` and execute it:
+
+1. Fetch Bytewax chart and decompress it
+```console
+$ helm repo add bytewax https://bytewax.github.io/helm-charts
+$ helm fetch bytewax/bytewax
+$ tar -xvf bytewax-0.1.0.tgz
+```
+2. Copy your file to the chart directory
+```console
+$ cp ./my-code.py ./bytewax/
+```
+3. Install Bytewax chart using your local copy
+```console
+$ helm upgrade --install my-dataflow ./bytewax \
+  --set configuration.pythonFileName="my-code.py" \
+  --set configuration.configMap.files.pattern="my-code.py"
+```
+
+### Create a Configmap before install Bytewax chart
+
+In this option, you will need to provide a Configmap with your file(s) and then configure your chart values to use it.
+
+There are the steps to create a Configmap to store `my-code.py` and use it with the Bytewax chart:
+
+1. Create the configmap
+```console
+$ kubectl create configmap my-configmap --from-file=my-code.py
+```
+2. Install Bytewax helm chart using `my-configmap`
+```console
+$ helm upgrade --install my-dataflow ./bytewax \
+  --set configuration.pythonFileName="my-code.py" \
+  --set configuration.configMap.create=false \
+  --set configuration.configMap.customName=my-configmap
 ```
 
 ## How to securely reference secrets in your code
