@@ -112,6 +112,7 @@ configuration:
   pythonFileName: "basic.py"
   processesCount: 1
   workersPerProcess: 1
+  keepAlive: true
   configMap:
     create: true
     customName:  
@@ -126,6 +127,7 @@ configuration:
 #   pythonFileName: "basic.py"
 #   processesCount: 1
 #   workersPerProcess: 1
+#   keepAlive: true
 #   configMap:
 #     create: false
 #     customName: "my-configmap"   
@@ -138,6 +140,7 @@ configuration:
 #   pythonFileName: "basic.py"
 #   processesCount: 1
 #   workersPerProcess: 1
+#   keepAlive: true
 #   configMap:
 #     create: false
 #     customName: "conf-d"   
@@ -150,6 +153,7 @@ configuration:
 #   pythonFileName: "basic.py"
 #   processesCount: 1
 #   workersPerProcess: 1
+#   keepAlive: true
 #   configMap:
 #     create: true
 #     customName: 
@@ -162,6 +166,7 @@ configuration:
 #   pythonFileName: "basic.py"
 #   processesCount: 1
 #   workersPerProcess: 1
+#   keepAlive: true
 #   configMap:
 #     create: true
 #     customName: 
@@ -174,6 +179,7 @@ configuration:
 #   pythonFileName: "examples/pagerank.py"  # in this example, the tar file includes "examples" directory
 #   processesCount: 1
 #   workersPerProcess: 1
+#   keepAlive: true
 #   configMap:
 #     create: true
 #     customName:  

@@ -99,7 +99,9 @@ spec:
             fieldRef:
               fieldPath: metadata.name
         - name: BYTEWAX_REPLICAS
-          value: "{{ .Values.configuration.processesCount }}"              
+          value: "{{ .Values.configuration.processesCount }}"
+        - name: BYTEWAX_KEEP_CONTAINER_ALIVE
+          value: "{{ .Values.configuration.keepAlive }}"
         - name: BYTEWAX_HOSTFILE_PATH
           value: "/etc/bytewax/hostfile.txt"
         - name: BYTEWAX_STATEFULSET_NAME

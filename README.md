@@ -61,6 +61,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `configuration.pythonFileName`            | Path of the python file to run                | `basic.py`                                              |
 | `configuration.processesCount`            | Number of concurrent processes to run         | `1`                                                     |
 | `configuration.workersPerProcess`         | Number of workers per process                 | `1`                                                     |
+| `configuration.keepAlive`                 | Keep the container process alive after dataflow executing ended to prevent a container restart by Kubernetes | `true` |
 | `configuration.configMap.create`          | Create a configmap to store python file(s)    | `true`                                                  |
 | `configuration.configMap.customName`      | Configmap which has python file(s) created manually | ``                                                |
 | `configuration.configMap.files.pattern`   | Files to store in the ConfigMap to be created | `examples/*`                                            |
@@ -137,6 +138,7 @@ There are the steps to include `my-code.py` and execute it:
 1. Fetch Bytewax chart and decompress it
 ```console
 $ helm repo add bytewax https://bytewax.github.io/helm-charts
+$ helm repo update
 $ helm fetch bytewax/bytewax
 $ tar -xvf bytewax-0.1.0.tgz
 ```
@@ -163,6 +165,8 @@ $ kubectl create configmap my-configmap --from-file=my-code.py
 ```
 2. Install Bytewax helm chart using `my-configmap`
 ```console
+$ helm repo add bytewax https://bytewax.github.io/helm-charts
+$ helm repo update
 $ helm upgrade --install my-dataflow ./bytewax \
   --set configuration.pythonFileName="my-code.py" \
   --set configuration.configMap.create=false \
