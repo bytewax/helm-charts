@@ -3,10 +3,10 @@
 # Declare variables to be passed into your templates.
 
 image:
-  repository: 443066169751.dkr.ecr.us-west-2.amazonaws.com/bytewax
+  repository: bytewax/bytewax
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.7.0"
+  tag: "v0.8.0-beta.2"
 
 imagePullSecrets: []
 

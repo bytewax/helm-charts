@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
 data:
 {{- if (.Values.configuration.configMap.files.tarName) }}
   {{- (.Files.Glob (printf "%s" .Values.configuration.configMap.files.tarName)).AsConfig | nindent 2 }}

@@ -36,7 +36,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | Parameter                                 | Description                                   | Default                                                 |
 |-------------------------------------------|-----------------------------------------------|---------------------------------------------------------|
 | `image.repository`                        | Image repository                              | `bytewax/bytewax`                                       |
-| `image.tag`                               | Image tag                                     | `0.7.0`                                                 |
+| `image.tag`                               | Image tag                                     | `v0.8.0-beta.2`                                                |
 | `image.pullPolicy`                        | Image pull policy                             | `Always`                                                |
 | `imagePullSecrets`                        | Image pull secrets                            | `[]`                                                    |
 | `serviceAccount.create`                   | Create service account                        | `true`                                                  |
@@ -90,7 +90,7 @@ configuration:
       tarName: "examples.tar"
 ```
 
-In this example, we store a tar file in the configmap. This is useful when you need a tree of nested files and directories. 
+In this example, we store a tar file in the configmap. This is useful when your python script needs a tree of nested files and directories. 
 
 Following our example, the tar file has this content:
 ```console
@@ -117,10 +117,13 @@ Following our example, the tar file has this content:
 │   └── wordcount.py
 ```
 So, because that tar file is going to be extracted to the container working directory then the container is going to have that tree available to work with.
-Our `pagerank.py` script opens a file located in `examples/sample_data` as we can see in this portion of its code:
+Our `pagerank.py` script opens a file located in `examples/sample_data` directory as we can see in this portion of its code:
 ```python
-ec = bytewax.Executor()
-flow = ec.Dataflow(read_edges("examples/sample_data/graph.txt"))
+if __name__ == "__main__":
+    for epoch, item in run_cluster(
+        flow, read_edges("examples/sample_data/graph.txt"), **parse.cluster_args()
+    ):
+        print(epoch, item)
 ```
 
 ## How to include your own python code
