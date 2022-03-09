@@ -23,7 +23,7 @@ This version requires Helm >= 3.1.0.
 
 ## Uninstalling the Chart
 
-To uninstall/delete the my-release deployment:
+To uninstall/delete the `my-release` deployment:
 
 ```console
 helm delete my-release
