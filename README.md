@@ -116,7 +116,7 @@ Following our example, the tar file has this content:
 │   ├── wikistream.py
 │   └── wordcount.py
 ```
-So, because that tar file is going to be extracted to the container working directory then the container is going to have that tree available to work with.
+Since that tar file is going to be extracted to the container working directory then the container is going to have that directory tree available to work with.
 Our `pagerank.py` script opens a file located in `examples/sample_data` directory as we can see in this portion of its code:
 ```python
 if __name__ == "__main__":
