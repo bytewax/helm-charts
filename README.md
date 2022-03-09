@@ -1,6 +1,6 @@
 # Bytewax Helm Chart
 
-* Installs the Python Stream Processing Library [Bytewax](https://bytewax.io/)
+* Installs the Python Stream Processing Library [Bytewax](https://bytewax.io/) and runs a Bytewax dataflow in on a Kubernetes cluster.
 
 ## Get Repo Info
 
