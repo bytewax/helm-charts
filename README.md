@@ -160,7 +160,7 @@ $ helm upgrade --install my-dataflow ./bytewax \
 
 In this option, you will need to provide a Configmap with your file(s) and then configure your chart values to use it.
 
-There are the steps to create a Configmap to store `my-code.py` and use it with the Bytewax chart:
+These are the steps to create a Configmap with `my-code.py` and use it with the Bytewax chart:
 
 1. Create the configmap
 ```console
