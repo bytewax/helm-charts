@@ -1,6 +1,6 @@
 # Bytewax Helm Chart
 
-* Installs the Python Stream Processing Library [Bytewax](https://bytewax.io/)
+* Installs the Python Stream Processing Library [Bytewax](https://bytewax.io/) and runs a Bytewax dataflow in on a Kubernetes cluster.
 
 ## Get Repo Info
 
@@ -23,7 +23,7 @@ This version requires Helm >= 3.1.0.
 
 ## Uninstalling the Chart
 
-To uninstall/delete the my-release deployment:
+To uninstall/delete the `my-release` deployment:
 
 ```console
 helm delete my-release
@@ -116,7 +116,7 @@ Following our example, the tar file has this content:
 │   ├── wikistream.py
 │   └── wordcount.py
 ```
-So, because that tar file is going to be extracted to the container working directory then the container is going to have that tree available to work with.
+Since that tar file is going to be extracted to the container working directory then the container is going to have that directory tree available to work with.
 Our `pagerank.py` script opens a file located in `examples/sample_data` directory as we can see in this portion of its code:
 ```python
 if __name__ == "__main__":
@@ -160,7 +160,7 @@ $ helm upgrade --install my-dataflow ./bytewax \
 
 In this option, you will need to provide a Configmap with your file(s) and then configure your chart values to use it.
 
-There are the steps to create a Configmap to store `my-code.py` and use it with the Bytewax chart:
+These are the steps to create a Configmap with `my-code.py` and use it with the Bytewax chart:
 
 1. Create the configmap
 ```console
