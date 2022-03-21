@@ -1,37 +1,42 @@
 import re
-import collections
 
-import bytewax
+from bytewax import Dataflow, inp, parse, run_cluster
 
 
 def file_input():
-    for line in open("sample_data/wordcount.txt", "r").readlines():
-        yield (1, line)
+    for line in open("examples/sample_data/wordcount.txt"):
+        yield 1, line
 
 
-def tokenize(x):
-    return re.findall(r'[^\s!,.?":;0-9]+', x)
+def lower(line):
+    return line.lower()
 
 
-def build_new_accumulator():
-    word_to_count = {}
-    return word_to_count
+def tokenize(line):
+    return re.findall(r'[^\s!,.?":;0-9]+', line)
 
 
-def acc(word_to_count, words):
-    for word in words:
-        if word not in word_to_count:
-            word_to_count[word] = 0
-        word_to_count[word] += 1
-    return word_to_count
+def initial_count(word):
+    return word, 1
 
 
-exec = bytewax.Executor()
-flow = exec.Dataflow(file_input())
-flow.map(lambda x: x.lower())
+def add(count1, count2):
+    return count1 + count2
+
+
+flow = Dataflow()
+# "Here, we have FULL sentences."
+flow.map(lower)
+# "here, we have lowercase sentences."
 flow.flat_map(tokenize)
-flow.accumulate(build_new_accumulator, acc)
-flow.inspect(print)
+# "words"
+flow.map(initial_count)
+# ("word", 1)
+flow.reduce_epoch(add)
+# ("word", count)
+flow.capture()
+
 
 if __name__ == "__main__":
-    exec.build_and_run()
+    for epoch, item in run_cluster(flow, file_input(), **parse.cluster_args()):
+        print(epoch, item)

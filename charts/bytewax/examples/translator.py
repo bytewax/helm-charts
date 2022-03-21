@@ -1,29 +1,30 @@
 import bytewax
+from bytewax import Dataflow, inp, parse, run_cluster
 from transformers import pipeline
 
 
-# Load my fancy model translator
-translator = pipeline("translation_en_to_de")
+def predict(en):
+    de = translator(en)[0]["translation_text"]
+    return (en, de)
 
 
-def gen_input():
-    with open("examples/sample_data/lyrics.txt") as lines:
-        for line in lines:
-            yield (1, line)
+def inspector(en_de):
+    en, de = en_de
+    print(f"{en} -> {de}")
 
 
-def predict(x):
-    y = translator(x)[0]["translation_text"]
-    print(f"{x} -> {y}")
-    return y
-
-
-ec = bytewax.Executor()
-flow = ec.Dataflow(gen_input())
+flow = Dataflow()
 flow.map(str.strip)
 flow.map(predict)
-flow.inspect(print)
+flow.capture()
 
 
 if __name__ == "__main__":
-    ec.build_and_run()
+    translator = pipeline("translation_en_to_de")
+
+    for epoch, item in run_cluster(
+        flow,
+        inp.single_batch(open("examples/sample_data/lyrics.txt")),
+        **parse.cluster_args(),
+    ):
+        inspector(item)

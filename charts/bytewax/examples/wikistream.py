@@ -1,25 +1,14 @@
-import json
-import sseclient
-import urllib3
 import collections
+import json
+import operator
 import time
 
-import bytewax
+import sseclient
+import urllib3
+from bytewax import Dataflow, inp, parse, spawn_cluster
 
 
-def tick_every(interval_sec):
-    epoch = 0
-    last_bump_sec = time.time() - interval_sec
-    while True:
-        yield epoch
-        now_sec = time.time()
-        frac_intervals = (now_sec - last_bump_sec) / interval_sec
-        if frac_intervals >= 1.0:
-            epoch += int(frac_intervals)
-            last_bump_sec = now_sec
-
-
-def gen_input():
+def open_stream():
     pool = urllib3.PoolManager()
     resp = pool.request(
         "GET",
@@ -29,28 +18,35 @@ def gen_input():
     )
     client = sseclient.SSEClient(resp)
 
-    for epoch, event in zip(tick_every(2), client.events()):
-        yield epoch, event.data
+    for event in client.events():
+        yield event.data
 
 
-def server_name(data_dict):
-    return data_dict["server_name"]
+def input_builder(worker_index, worker_count):
+    if worker_index == 0:
+        return inp.tumbling_epoch(2.0, open_stream())
+    else:
+        return []
 
 
-def count_edits(acc, server_names):
-    for server_name in server_names:
-        acc[server_name] += 1
-    return acc
+def output_builder(worker_index, worker_count):
+    return print
 
 
-ec = bytewax.Executor()
-flow = ec.Dataflow(gen_input())
+def initial_count(data_dict):
+    return data_dict["server_name"], 1
+
+
+flow = Dataflow()
+# "event_json"
 flow.map(json.loads)
-flow.map(server_name)
-flow.exchange(hash)
-flow.accumulate(lambda: collections.defaultdict(int), count_edits)
-flow.inspect_epoch(print)
+# {"server_name": "server.name", ...}
+flow.map(initial_count)
+# ("server.name", 1)
+flow.reduce_epoch(operator.add)
+# ("server.name", count)
+flow.capture()
 
 
 if __name__ == "__main__":
-    ec.build_and_run()
+    spawn_cluster(flow, input_builder, output_builder, **parse.cluster_args())

@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "bytewax.labels" . | nindent 4 }}  
 spec:
@@ -19,6 +20,9 @@ spec:
       {{- end }}
       labels:
         {{- include "bytewax.selectorLabels" . | nindent 8 }}
+{{- with .Values.podLabels }}
+{{ toYaml . | indent 8 }}
+{{- end }}      
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -65,12 +69,18 @@ spec:
 {{- else }}
           mountPath: /tmp/bytewax/
 {{- end }}
+{{- range .Values.extraVolumeMounts }}
+        - name: {{ .name }}
+          mountPath: {{ .mountPath }}
+          subPath: {{ .subPath | default "" }}
+          readOnly: {{ .readOnly }}
+{{- end }}
       terminationGracePeriodSeconds: 10
       containers:
       - name: worker    
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        command: ["sh","-c","sh ./entrypoint.sh && sleep 7200"]
+        command: ["sh","-c","sh ./entrypoint.sh"]
         ports:
         - containerPort: {{ .Values.service.port }}
           name: worker
@@ -90,11 +100,33 @@ spec:
             fieldRef:
               fieldPath: metadata.name
         - name: BYTEWAX_REPLICAS
-          value: "{{ .Values.configuration.processesCount }}"              
+          value: "{{ .Values.configuration.processesCount }}"
+        - name: BYTEWAX_KEEP_CONTAINER_ALIVE
+          value: "{{ .Values.configuration.keepAlive }}"
         - name: BYTEWAX_HOSTFILE_PATH
           value: "/etc/bytewax/hostfile.txt"
         - name: BYTEWAX_STATEFULSET_NAME
           value: "{{ .Release.Name }}"
+{{- range $key, $value := .Values.env }}
+        - name: "{{ tpl $key $ }}"
+          value: "{{ tpl (print $value) $ }}"
+{{- end }}
+{{- if or .Values.envFromSecret (or .Values.envFromSecrets) }}
+        envFrom:
+        {{- if .Values.envFromSecret }}
+          - secretRef:
+              name: {{ tpl .Values.envFromSecret . }}
+        {{- end }}
+        {{- if .Values.envRenderSecret }}
+          - secretRef:
+              name: {{ .Release.Name }}-env
+        {{- end }}
+        {{- range .Values.envFromSecrets }}
+          - secretRef:
+              name: {{ .name }}
+              optional: {{ .optional | default false }}
+        {{- end }}
+{{- end }}
         resources:
           {{- toYaml .Values.resources | nindent 12 }}
         securityContext:
@@ -116,3 +148,29 @@ spec:
 {{- end }}
       - name: working-directory
         emptyDir: {}
+{{- range .Values.extraSecretMounts }}
+{{- if .secretName }}
+      - name: {{ .name }}
+        secret:
+          secretName: {{ .secretName }}
+          defaultMode: {{ .defaultMode }}
+{{- else if .projected }}
+      - name: {{ .name }}
+        projected: {{- toYaml .projected | nindent 6 }}
+{{- else if .csi }}
+      - name: {{ .name }}
+        csi: {{- toYaml .csi | nindent 6 }}
+{{- end }}
+{{- end }}
+{{- range .Values.extraVolumeMounts }}
+      - name: {{ .name }}
+        {{- if .existingClaim }}
+        persistentVolumeClaim:
+          claimName: {{ .existingClaim }}
+        {{- else if .hostPath }}
+        hostPath:
+          path: {{ .hostPath }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+{{- end }}

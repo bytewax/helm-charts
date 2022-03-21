@@ -1,56 +1,44 @@
-#!/usr/bin/env python3
-
 import json
-from collections import defaultdict
+import operator
 import time
+from collections import defaultdict
+
+from bytewax import Dataflow, inp, parse, run_cluster
+
 from utils import twitter
-
-import bytewax
-
-# batch the input for every n seconds
-def tick_every(interval_sec):
-    timely_t = 0
-    last_bump_sec = time.time() - interval_sec
-    while True:
-        yield timely_t
-        now_sec = time.time()
-        frac_intervals = (now_sec - last_bump_sec) / interval_sec
-        if frac_intervals >= 1.0:
-            timely_t += int(frac_intervals)
-            last_bump_sec = now_sec
-
-
-def gen_input():
-    for t, event in zip(tick_every(2), twitter.get_stream()):
-        yield t, event
 
 
 def decode(x):
-    # add try/except to handle nulls
     try:
-        return json.loads(x)
+        return [json.loads(x)]
     except ValueError:
-        return {'matching_rules':[]}
+        return []  # Ignore errors. This will skip because in flat_map.
 
-# get all of the mentioned hashtags        
+
 def coin_name(data_dict):
-    return [x['tag'] for x in data_dict["matching_rules"]]
-
-# count the mentions
-def count_edits(acc, tags):
-    for tag in tags:
-        acc[tag] += 1
-    return acc
+    # Get all of the mentioned hashtags.
+    return [x["tag"] for x in data_dict["matching_rules"]]
 
 
-ex = bytewax.Executor()
-df = ex.DataflowBlueprint(gen_input())
-df.map(decode)
-df.flat_map(coin_name)
-df.exchange(hash)
-df.accumulate(lambda: defaultdict(int), count_edits)
-df.inspect(print)
+def initial_count(coin):
+    return coin, 1
+
+
+flow = Dataflow()
+# "event_json"
+flow.flat_map(decode)
+# {event_dict}
+flow.flat_map(coin_name)
+# "coin"
+flow.map(initial_count)
+# ("coin", 1)
+flow.reduce_epoch(operator.add)
+# ("coin", count)
+flow.capture()
 
 
 if __name__ == "__main__":
-    ex.build_and_run()
+    for epoch, item in run_cluster(
+        flow, inp.tumbling_epoch(2.0, twitter.get_stream()), **parse.cluster_args()
+    ):
+        print(epoch, item)
