@@ -77,13 +77,13 @@ spec:
 {{- end }}
       terminationGracePeriodSeconds: 10
       containers:
-      - name: worker    
+      - name: process    
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command: ["sh","-c","sh ./entrypoint.sh"]
         ports:
         - containerPort: {{ .Values.service.port }}
-          name: worker
+          name: process
         env:
         - name: RUST_LOG
           value: "librdkafka=debug,rdkafka::client=debug"
