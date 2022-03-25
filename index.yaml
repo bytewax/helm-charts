@@ -3,6 +3,17 @@ entries:
   bytewax:
   - apiVersion: v2
     appVersion: 0.8.0-beta.2
+    created: "2022-03-25T13:54:05.736256398Z"
+    description: A Helm chart for Bytewax
+    digest: 26fec52706765768ca96d3c3c8c88d8535aab5d86ce8cf9d0ec5abbb9ae7e9b8
+    icon: https://bytewax.io/assets/img/favicon.png
+    name: bytewax
+    type: application
+    urls:
+    - https://github.com/bytewax/helm-charts/releases/download/bytewax-0.2.1/bytewax-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
+    appVersion: 0.8.0-beta.2
     created: "2022-03-21T14:35:00.270690818Z"
     description: A Helm chart for Bytewax
     digest: cb12260fc1c97d0c24bffca97895d07b9062efa1f292f0b6ec1e26d3e0cf43af
@@ -23,4 +34,4 @@ entries:
     urls:
     - https://github.com/bytewax/helm-charts/releases/download/bytewax-0.1.0/bytewax-0.1.0.tgz
     version: 0.1.0
-generated: "2022-03-21T14:35:00.270697218Z"
+generated: "2022-03-25T13:54:05.736269498Z"
