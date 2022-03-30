@@ -95,26 +95,10 @@ In this example, we store a tar file in the configmap. This is useful when your 
 Following our example, the tar file has this content:
 ```console
 ├── examples
-│   ├── anomaly_detector.py
 │   ├── basic.py
-│   ├── events_to_parquet.py
 │   ├── pagerank.py
 │   ├── sample_data
-│   │   ├── easy_count.txt
-│   │   ├── graph.txt
-│   │   ├── lyrics.txt
-│   │   └── wordcount.txt
-│   ├── search_session.py
-│   ├── sleepyworkers.py
-│   ├── subflow.py
-│   ├── translator.py
-│   ├── twitter_stream.py
-│   ├── utils
-│   │   ├── fake_events.py
-│   │   ├── __init__.py
-│   │   └── twitter.py
-│   ├── wikistream.py
-│   └── wordcount.py
+│   │   └── graph.txt
 ```
 Since that tar file is going to be extracted to the container working directory then the container is going to have that directory tree available to work with.
 Our `pagerank.py` script opens a file located in `examples/sample_data` directory as we can see in this portion of its code:
