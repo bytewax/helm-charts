@@ -1,6 +1,6 @@
 # Bytewax Helm Chart
 
-* Installs the Python Stream Processing Library [Bytewax](https://bytewax.io/) and runs a Bytewax dataflow in on a Kubernetes cluster.
+* Runs a [Bytewax](https://bytewax.io) dataflow on a Kubernetes cluster.
 
 ## Get Repo Info
 
@@ -36,7 +36,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | Parameter                                 | Description                                   | Default                                                 |
 |-------------------------------------------|-----------------------------------------------|---------------------------------------------------------|
 | `image.repository`                        | Image repository                              | `bytewax/bytewax`                                       |
-| `image.tag`                               | Image tag                                     | `v0.8.0-beta.2`                                                |
+| `image.tag`                               | Image tag                                     | `0.8.0-python3.9`                                                |
 | `image.pullPolicy`                        | Image pull policy                             | `Always`                                                |
 | `imagePullSecrets`                        | Image pull secrets                            | `[]`                                                    |
 | `serviceAccount.create`                   | Create service account                        | `true`                                                  |
