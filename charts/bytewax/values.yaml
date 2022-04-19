@@ -6,7 +6,7 @@ image:
   repository: bytewax/bytewax
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v0.8.0"
+  tag: "0.8.0-python3.9"
 
 imagePullSecrets: []
 
