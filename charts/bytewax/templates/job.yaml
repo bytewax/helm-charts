@@ -1,18 +1,15 @@
-{{- if not (.Values.configuration.jobMode) }}
-apiVersion: apps/v1
-kind: StatefulSet
+{{- if (.Values.configuration.jobMode) }}
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "bytewax.labels" . | nindent 4 }}  
 spec:
-  replicas: {{ .Values.configuration.processesCount }}
-  selector:
-    matchLabels:
-      {{- include "bytewax.selectorLabels" . | nindent 6 }}
-  serviceName: "{{ .Release.Name }}"
-  podManagementPolicy: "Parallel"
+  completions: {{ .Values.configuration.processesCount }}
+  parallelism: {{ .Values.configuration.processesCount }}
+  completionMode: Indexed
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -25,6 +22,8 @@ spec:
 {{ toYaml . | indent 8 }}
 {{- end }}      
     spec:
+      restartPolicy: Never
+      subdomain: {{ .Release.Name }}
       affinity:
         {{- toYaml .Values.affinity | nindent 8 }}
       {{- with .Values.imagePullSecrets }}
@@ -103,11 +102,11 @@ spec:
         - name: BYTEWAX_POD_NAME
           valueFrom:
             fieldRef:
-              fieldPath: metadata.name
+              fieldPath: metadata.annotations['batch.kubernetes.io/job-completion-index']
         - name: BYTEWAX_REPLICAS
           value: "{{ .Values.configuration.processesCount }}"
         - name: BYTEWAX_KEEP_CONTAINER_ALIVE
-          value: "{{ .Values.configuration.keepAlive }}"
+          value: "false"
         - name: BYTEWAX_HOSTFILE_PATH
           value: "/etc/bytewax/hostfile.txt"
         - name: BYTEWAX_STATEFULSET_NAME

@@ -6,7 +6,7 @@ image:
   repository: bytewax/bytewax
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.8.0-python3.9"
+  tag: "0.10.0-python3.9"
 
 imagePullSecrets: []
 
@@ -109,10 +109,11 @@ extraVolumeMounts: []
   #   hostPath: /usr/shared/
 
 configuration:
-  pythonFileName: "basic.py"
+  pythonFileName: "k8s_basic.py"
   processesCount: 1
   workersPerProcess: 1
   keepAlive: true
+  jobMode: false
   configMap:
     create: true
     customName:  
@@ -128,6 +129,7 @@ configuration:
 #   processesCount: 1
 #   workersPerProcess: 1
 #   keepAlive: true
+#   jobMode: false
 #   configMap:
 #     create: false
 #     customName: "my-configmap"   
@@ -141,6 +143,7 @@ configuration:
 #   processesCount: 1
 #   workersPerProcess: 1
 #   keepAlive: true
+#   jobMode: false
 #   configMap:
 #     create: false
 #     customName: "conf-d"   
@@ -154,6 +157,7 @@ configuration:
 #   processesCount: 1
 #   workersPerProcess: 1
 #   keepAlive: true
+#   jobMode: false
 #   configMap:
 #     create: true
 #     customName: 
@@ -167,6 +171,7 @@ configuration:
 #   processesCount: 1
 #   workersPerProcess: 1
 #   keepAlive: true
+#   jobMode: false
 #   configMap:
 #     create: true
 #     customName: 
@@ -180,6 +185,7 @@ configuration:
 #   processesCount: 1
 #   workersPerProcess: 1
 #   keepAlive: true
+#   jobMode: false
 #   configMap:
 #     create: true
 #     customName:  

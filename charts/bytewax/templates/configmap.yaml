@@ -4,10 +4,11 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
-data:
 {{- if (.Values.configuration.configMap.files.tarName) }}
-  {{- (.Files.Glob (printf "%s" .Values.configuration.configMap.files.tarName)).AsConfig | nindent 2 }}
+binaryData:
+  {{ .Values.configuration.configMap.files.tarName }}: {{ .Files.Get .Values.configuration.configMap.files.tarName | b64enc | nindent 4 }}
 {{- else }}
+data:
   {{- (.Files.Glob (printf "%s" .Values.configuration.configMap.files.pattern)).AsConfig | nindent 2 }}
 {{- end }}
 {{- end }}

@@ -12,3 +12,6 @@ spec:
   clusterIP: None
   selector:
     {{- include "bytewax.selectorLabels" . | nindent 4 }}
+{{- if (.Values.configuration.jobMode) }}
+    job-name: {{ .Release.Name }}
+{{- end }}
