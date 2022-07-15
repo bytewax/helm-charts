@@ -36,17 +36,17 @@ The command removes all the Kubernetes components associated with the chart and 
 | Parameter                                 | Description                                   | Default                                                 |
 |-------------------------------------------|-----------------------------------------------|---------------------------------------------------------|
 | `image.repository`                        | Image repository                              | `bytewax/bytewax`                                       |
-| `image.tag`                               | Image tag                                     | `0.8.0-python3.9`                                                |
+| `image.tag`                               | Image tag                                     | `0.10.0-python3.9`                                      |
 | `image.pullPolicy`                        | Image pull policy                             | `Always`                                                |
 | `imagePullSecrets`                        | Image pull secrets                            | `[]`                                                    |
 | `serviceAccount.create`                   | Create service account                        | `true`                                                  |
 | `serviceAccount.annotations`              | Annotations to add to the service account     | `{}`                                                    |
 | `serviceAccount.name`                     | Service account name to use, when empty will be set to created account if `serviceAccount.create` is set else to `default` | `` |
 | `extralabels`                             | Labels to add to common labels                | `{}`                                                    |
-| `podLabels`                               | Statefulset pod labels                        | `{}`                                                    |
-| `podAnnotations`                          | Statefulset pod annotations                   | `{}`                                                    |
-| `podSecurityContext`                      | Statefulset pod securityContext               | `{"runAsNonRoot": true, "runAsUser": 65532, "runAsGroup": 3000, "fsGroup": 2000}`  |
-| `securityContext`                         | Statefulset containers securityContext        | `{"allowPrivilegeEscalation": false, "capabilities": {"drop": ["ALL"], "add": ["NET_BIND_SERVICE"]}, "readOnlyRootFilesystem": true }`|
+| `podLabels`                               | Statefulset/Job pod labels                        | `{}`                                                    |
+| `podAnnotations`                          | Statefulset/Job pod annotations                   | `{}`                                                    |
+| `podSecurityContext`                      | Statefulset/Job pod securityContext               | `{"runAsNonRoot": true, "runAsUser": 65532, "runAsGroup": 3000, "fsGroup": 2000}`  |
+| `securityContext`                         | Statefulset/Job containers securityContext        | `{"allowPrivilegeEscalation": false, "capabilities": {"drop": ["ALL"], "add": ["NET_BIND_SERVICE"]}, "readOnlyRootFilesystem": true }`|
 | `service.port`                            | Kubernetes port where service is exposed      | `9999`                                                  |
 | `resources`                               | CPU/Memory resource requests/limits           | `{}`                                                    |
 | `nodeSelector`                            | Node labels for pod assignment                | `{}`                                                    |
@@ -61,7 +61,8 @@ The command removes all the Kubernetes components associated with the chart and 
 | `configuration.pythonFileName`            | Path of the python file to run                | `basic.py`                                              |
 | `configuration.processesCount`            | Number of concurrent processes to run         | `1`                                                     |
 | `configuration.workersPerProcess`         | Number of workers per process                 | `1`                                                     |
-| `configuration.keepAlive`                 | Keep the container process alive after dataflow executing ended to prevent a container restart by Kubernetes | `true` |
+| `configuration.jobMode`                   | Create a kubernetes Job resource instead of a Statefulset (use this for batch processing) - Kubernetes version required: 1.24 or superior | `false` |
+| `configuration.keepAlive`                 | Keep the container process alive after dataflow executing ended to prevent a container restart by Kubernetes (ignored when .jobMode is true) | `true` |
 | `configuration.configMap.create`          | Create a configmap to store python file(s)    | `true`                                                  |
 | `configuration.configMap.customName`      | Configmap which has python file(s) created manually | ``                                                |
 | `configuration.configMap.files.pattern`   | Files to store in the ConfigMap to be created | `examples/*`                                            |
@@ -72,18 +73,19 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ```yaml
 configuration:
-  pythonFileName: "basic.py"
+  pythonFileName: "k8s_basic.py"
   configMap:
     files:
       pattern: "examples/*"
       tarName:
 ```
 
-### Example running pagerank.py obtained from a Configmap created by Helm
+### Example running k8s_cluster.py obtained from a Configmap created by Helm
 
 ```yaml
 configuration:
-  pythonFileName: "examples/pagerank.py"
+  pythonFileName: "examples/k8s_cluster.py"
+  processesCount: 5
   configMap:
     files:
       pattern: 
@@ -94,20 +96,25 @@ In this example, we store a tar file in the configmap. This is useful when your 
 
 Following our example, the tar file has this content:
 ```console
-├── examples
-│   ├── basic.py
-│   ├── pagerank.py
-│   ├── sample_data
-│   │   └── graph.txt
+├── k8s_basic.py
+├── k8s_cluster.py
+└── sample_data
+    └── cluster
+        ├── partition-1.txt
+        ├── partition-2.txt
+        ├── partition-3.txt
+        ├── partition-4.txt
+        └── partition-5.txt
 ```
 Since that tar file is going to be extracted to the container working directory then the container is going to have that directory tree available to work with.
-Our `pagerank.py` script opens a file located in `examples/sample_data` directory as we can see in this portion of its code:
+Our `k8s_cluster.py` script opens a file located in `examples/sample_data/cluster` directory as we can see in this portion of its code:
 ```python
-if __name__ == "__main__":
-    for epoch, item in run_cluster(
-        flow, read_edges("examples/sample_data/graph.txt"), **parse.cluster_args()
-    ):
-        print(epoch, item)
+read_dir = Path("./examples/sample_data/cluster/")
+```
+
+If you want to see the output produced by this example you can run this (assuming that your Helm release name was `k8s`):
+```bash
+for PROCESS in {0..4}; do echo "$PROCESS.out:"; kubectl exec -it k8s-$PROCESS -cprocess -- cat /var/bytewax/cluster_out/$PROCESS.out; done
 ```
 
 ## How to include your own python code
@@ -127,7 +134,7 @@ There are the steps to include `my-code.py` and execute it:
 $ helm repo add bytewax https://bytewax.github.io/helm-charts
 $ helm repo update
 $ helm fetch bytewax/bytewax
-$ tar -xvf bytewax-0.1.0.tgz
+$ tar -xvf bytewax-0.3.0.tgz
 ```
 2. Copy your file to the chart directory
 ```console
