@@ -93,6 +93,8 @@ spec:
           value: "librdkafka=debug,rdkafka::client=debug"
         - name: RUST_BACKTRACE
           value: "full"
+        - name: PYTHONUNBUFFERED
+          value: "1"
         - name: BYTEWAX_PYTHON_FILE_PATH
           value: "/var/bytewax/{{ .Values.configuration.pythonFileName }}"
         - name: BYTEWAX_WORKDIR
