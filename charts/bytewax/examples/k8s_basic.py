@@ -1,24 +1,23 @@
-import json
-import datetime as dt
-
-from bytewax import Dataflow, cluster_main, parse
-from bytewax.inputs import Emit, AdvanceTo, ManualInputConfig
+from bytewax.dataflow import Dataflow
+from bytewax.execution import cluster_main
+from bytewax.inputs import ManualInputConfig
+from bytewax.outputs import ManualOutputConfig
+from bytewax import parse
 
 def input_builder(worker_index, worker_count, resume_epoch):
-    for epoch in range(100):
-        yield AdvanceTo(epoch)
-        yield Emit(epoch)
+    # Ignore state recovery here
+    state = None
+    for i in range(100):
+        yield state, i
 
 def output_builder(worker_index, worker_count):
-    def output_handler(epoch_item):
-        epoch, item = epoch_item
-        print(f"worker: {worker_index} - epoch: {epoch} - item: {item}")
+    def output_handler(item):
+        print(f"worker: {worker_index} - item: {item}")
     return output_handler
 
 flow = Dataflow()
-flow.capture()
+flow.input("inp", ManualInputConfig(input_builder))
+flow.capture(ManualOutputConfig(output_builder))
 
 if __name__ == "__main__":
-    cluster_main(
-        flow, ManualInputConfig(input_builder), output_builder, **parse.proc_env()
-    )
+    cluster_main(flow, **parse.proc_env())
