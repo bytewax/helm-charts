@@ -32,6 +32,8 @@ podSecurityContext:
   runAsNonRoot: true
   runAsUser: 65532
 
+containerName: process
+
 securityContext:
   allowPrivilegeEscalation: false
   capabilities:
