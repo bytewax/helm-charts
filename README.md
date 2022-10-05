@@ -46,6 +46,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `podLabels`                               | Statefulset/Job pod labels                        | `{}`                                                    |
 | `podAnnotations`                          | Statefulset/Job pod annotations                   | `{}`                                                    |
 | `podSecurityContext`                      | Statefulset/Job pod securityContext               | `{"runAsNonRoot": true, "runAsUser": 65532, "runAsGroup": 3000, "fsGroup": 2000}`  |
+| `containerName`                           | Statefulset/Job application container name  | `process`|
 | `securityContext`                         | Statefulset/Job containers securityContext        | `{"allowPrivilegeEscalation": false, "capabilities": {"drop": ["ALL"], "add": ["NET_BIND_SERVICE"]}, "readOnlyRootFilesystem": true }`|
 | `service.port`                            | Kubernetes port where service is exposed      | `9999`                                                  |
 | `resources`                               | CPU/Memory resource requests/limits           | `{}`                                                    |
