@@ -6,7 +6,7 @@ image:
   repository: bytewax/bytewax
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.11.0-python3.9"
+  tag: "0.12.0-python3.9"
 
 imagePullSecrets: []
 
@@ -111,7 +111,7 @@ extraVolumeMounts: []
   #   hostPath: /usr/shared/
 
 configuration:
-  pythonFileName: "k8s_basic.py"
+  pythonFileName: "wikistream.py"
   processesCount: 1
   workersPerProcess: 1
   keepAlive: true
@@ -194,3 +194,29 @@ configuration:
 #     files:
 #       pattern: 
 #       tarName: "examples.tar"
+
+customOtlpUrl: ""
+
+opentelemetry-collector:
+  enabled: false
+  mode: deployment
+  config:
+    exporters:
+      jaeger:
+        endpoint: "{{ .Release.Name }}-jaeger-collector:14250"
+        tls:
+          insecure: true
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: []
+          exporters: [logging,jaeger]
+
+jaeger:
+  enabled: false
+  provisionDataStore:
+    cassandra: false
+    elasticsearch: true
+  storage:
+    type: elasticsearch

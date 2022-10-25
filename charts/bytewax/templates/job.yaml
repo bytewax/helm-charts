@@ -113,6 +113,12 @@ spec:
           value: "/etc/bytewax/hostfile.txt"
         - name: BYTEWAX_STATEFULSET_NAME
           value: "{{ .Release.Name }}"
+        - name: BYTEWAX_OTLP_URL
+{{- if .Values.customOtlpUrl }}
+          value: "{{ .Values.customOtlpUrl }}"
+{{- else }}
+          value: "http://{{ .Release.Name }}-opentelemetry-collector:4317"
+{{- end }}
 {{- range $key, $value := .Values.env }}
         - name: "{{ tpl $key $ }}"
           value: "{{ tpl (print $value) $ }}"
