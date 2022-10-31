@@ -14,8 +14,15 @@ from bytewax.inputs import ManualInputConfig
 from bytewax.outputs import StdOutputConfig
 from bytewax.recovery import SqliteRecoveryConfig
 from bytewax.window import SystemClockConfig, TumblingWindowConfig
-from bytewax.tracing import OltpTracingConfig
+from bytewax.tracing import setup_tracing, OtlpTracingConfig
 
+tracer = setup_tracing(
+    tracing_config=OtlpTracingConfig(
+        url=os.getenv("BYTEWAX_OTLP_URL", "grpc://127.0.0.1:4317"),
+        service_name="Tracing-example",
+    ),
+    log_level="TRACE",
+)
 
 def input_builder(worker_index, worker_count, resume_state):
     # Multiple SSE connections will duplicate the streams, so only
@@ -73,12 +80,5 @@ if __name__ == "__main__":
     cluster_main(
         flow,
         recovery_config=SqliteRecoveryConfig("."),
-        tracing_config=OltpTracingConfig(
-            url=os.getenv("BYTEWAX_OTLP_URL", "http://127.0.0.1:4317"),
-            service_name="Wikistream",
-            protocol="GRPC",
-        ),
         **parse.proc_env()
     )
-
-    # cluster_main(flow, recovery_config=recovery_config, **parse.proc_env())
