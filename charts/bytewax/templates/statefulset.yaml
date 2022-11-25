@@ -89,6 +89,8 @@ spec:
         ports:
         - containerPort: {{ .Values.service.port }}
           name: process
+        - containerPort: {{ .Values.api.port }}
+          name: api          
         env:
         - name: RUST_LOG
           value: "librdkafka=debug,rdkafka::client=debug"
