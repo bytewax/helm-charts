@@ -1,15 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ .Release.Name }}-api
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "bytewax.labels" . | nindent 4 }}
 spec:
   ports:
-  - port: {{ .Values.service.port }}
-    name: process
-  clusterIP: None
+  - port: {{ .Values.api.port }}
+    name: api
   selector:
     {{- include "bytewax.selectorLabels" . | nindent 4 }}
 {{- if (.Values.configuration.jobMode) }}

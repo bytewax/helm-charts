@@ -46,6 +46,9 @@ securityContext:
 service:
   port: 9999
 
+api:
+  port: 3030
+
 resources: {}
   # limits:
   #   cpu: 100m
