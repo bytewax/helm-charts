@@ -6,7 +6,7 @@ image:
   repository: bytewax.docker.scarf.sh/bytewax/bytewax
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.13.1-python3.9"
+  tag: "0.14.0-python3.9"
 
 imagePullSecrets: []
 
@@ -114,7 +114,7 @@ extraVolumeMounts: []
   #   hostPath: /usr/shared/
 
 configuration:
-  pythonFileName: "wikistream.py"
+  pythonFileName: "k8s_basic.py"
   processesCount: 1
   workersPerProcess: 1
   keepAlive: true
