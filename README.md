@@ -46,7 +46,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | Parameter                                 | Description                                   | Default                                                 |
 |-------------------------------------------|-----------------------------------------------|---------------------------------------------------------|
 | `image.repository`                        | Image repository                              | `bytewax.docker.scarf.sh/bytewax/bytewax`                                       |
-| `image.tag`                               | Image tag                                     | `0.14.0-python3.9`                                      |
+| `image.tag`                               | Image tag                                     | `0.15.1-python3.9`                                      |
 | `image.pullPolicy`                        | Image pull policy                             | `Always`                                                |
 | `imagePullSecrets`                        | Image pull secrets                            | `[]`                                                    |
 | `serviceAccount.create`                   | Create service account                        | `true`                                                  |
@@ -74,7 +74,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `configuration.processesCount`            | Number of concurrent processes to run         | `1`                                                     |
 | `configuration.workersPerProcess`         | Number of workers per process                 | `1`                                                     |
 | `configuration.jobMode`                   | Create a kubernetes Job resource instead of a Statefulset (use this for batch processing) - Kubernetes version required: 1.24 or superior | `false` |
-| `configuration.keepAlive`                 | Keep the container process alive after dataflow executing ended to prevent a container restart by Kubernetes (ignored when .jobMode is true) | `true` |
+| `configuration.keepAlive`                 | Keep the container process alive after dataflow executing ended to prevent a container restart by Kubernetes (ignored when .jobMode is true) | `false` |
 | `configuration.configMap.create`          | Create a configmap to store python file(s)    | `true`                                                  |
 | `configuration.configMap.customName`      | Configmap which has python file(s) created manually | ``                                                |
 | `configuration.configMap.files.pattern`   | Files to store in the ConfigMap to be created | `examples/*`                                            |

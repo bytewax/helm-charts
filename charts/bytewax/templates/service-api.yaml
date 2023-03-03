@@ -10,7 +10,5 @@ spec:
   - port: {{ .Values.api.port }}
     name: api
   selector:
+    bytewax.io/dataflow-info: {{ .Release.Name }}
     {{- include "bytewax.selectorLabels" . | nindent 4 }}
-{{- if (.Values.configuration.jobMode) }}
-    job-name: {{ .Release.Name }}
-{{- end }}
