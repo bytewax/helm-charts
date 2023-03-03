@@ -3,11 +3,13 @@ from bytewax.execution import cluster_main
 from bytewax.inputs import ManualInputConfig
 from bytewax.outputs import ManualOutputConfig
 from bytewax import parse
+import time
 
 def input_builder(worker_index, worker_count, resume_epoch):
     # Ignore state recovery here
     state = None
     for i in range(100):
+        time.sleep(1)
         yield state, i
 
 def output_builder(worker_index, worker_count):

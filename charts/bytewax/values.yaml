@@ -6,7 +6,7 @@ image:
   repository: bytewax.docker.scarf.sh/bytewax/bytewax
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.14.0-python3.9"
+  tag: "0.15.1-python3.9"
 
 imagePullSecrets: []
 
@@ -117,7 +117,7 @@ configuration:
   pythonFileName: "k8s_basic.py"
   processesCount: 1
   workersPerProcess: 1
-  keepAlive: true
+  keepAlive: false
   jobMode: false
   configMap:
     create: true
@@ -133,7 +133,7 @@ configuration:
 #   pythonFileName: "basic.py"
 #   processesCount: 1
 #   workersPerProcess: 1
-#   keepAlive: true
+#   keepAlive: false
 #   jobMode: false
 #   configMap:
 #     create: false
@@ -147,7 +147,7 @@ configuration:
 #   pythonFileName: "basic.py"
 #   processesCount: 1
 #   workersPerProcess: 1
-#   keepAlive: true
+#   keepAlive: false
 #   jobMode: false
 #   configMap:
 #     create: false
@@ -161,7 +161,7 @@ configuration:
 #   pythonFileName: "basic.py"
 #   processesCount: 1
 #   workersPerProcess: 1
-#   keepAlive: true
+#   keepAlive: false
 #   jobMode: false
 #   configMap:
 #     create: true
@@ -175,7 +175,7 @@ configuration:
 #   pythonFileName: "basic.py"
 #   processesCount: 1
 #   workersPerProcess: 1
-#   keepAlive: true
+#   keepAlive: false
 #   jobMode: false
 #   configMap:
 #     create: true
@@ -189,7 +189,7 @@ configuration:
 #   pythonFileName: "examples/pagerank.py"  # in this example, the tar file includes "examples" directory
 #   processesCount: 1
 #   workersPerProcess: 1
-#   keepAlive: true
+#   keepAlive: false
 #   jobMode: false
 #   configMap:
 #     create: true
