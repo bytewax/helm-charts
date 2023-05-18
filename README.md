@@ -46,7 +46,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | Parameter                                 | Description                                   | Default                                                 |
 |-------------------------------------------|-----------------------------------------------|---------------------------------------------------------|
 | `image.repository`                        | Image repository                              | `bytewax.docker.scarf.sh/bytewax/bytewax`                                       |
-| `image.tag`                               | Image tag                                     | `0.15.1-python3.9`                                      |
+| `image.tag`                               | Image tag                                     | `0.16.1-python3.9`                                      |
 | `image.pullPolicy`                        | Image pull policy                             | `Always`                                                |
 | `imagePullSecrets`                        | Image pull secrets                            | `[]`                                                    |
 | `serviceAccount.create`                   | Create service account                        | `true`                                                  |
@@ -59,7 +59,9 @@ The command removes all the Kubernetes components associated with the chart and 
 | `containerName`                           | Statefulset/Job application container name  | `process`|
 | `securityContext`                         | Statefulset/Job containers securityContext        | `{"allowPrivilegeEscalation": false, "capabilities": {"drop": ["ALL"], "add": ["NET_BIND_SERVICE"]}, "readOnlyRootFilesystem": true }`|
 | `service.port`                            | Kubernetes port where intertal bytewax service is exposed   | `9999`                                    |
+| `api.enabled`                             | Create resources related to dataflow api      | `true`                                                  |
 | `api.port`                                | Kubernetes port where dataflow api service is exposed      | `3030`                                     |
+| `api.cacheport`                           | Kubernetes port where dataflow api cache service is exposed      | `3033`                               |
 | `resources`                               | CPU/Memory resource requests/limits           | `{}`                                                    |
 | `nodeSelector`                            | Node labels for pod assignment                | `{}`                                                    |
 | `tolerations`                             | Toleration labels for pod assignment          | `[]`                                                    |
