@@ -115,8 +115,10 @@ spec:
           value: "/etc/bytewax/hostfile.txt"
         - name: BYTEWAX_STATEFULSET_NAME
           value: "{{ .Release.Name }}"
+{{- if .Values.api.enabled }}
         - name: BYTEWAX_DATAFLOW_API_ENABLED
           value: "true"
+{{- end }}
         - name: BYTEWAX_OTLP_URL
 {{- if .Values.customOtlpUrl }}
           value: "{{ .Values.customOtlpUrl }}"

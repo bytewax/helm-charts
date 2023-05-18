@@ -1,3 +1,4 @@
+{{- if .Values.api.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -9,6 +10,13 @@ spec:
   ports:
   - port: {{ .Values.api.port }}
     name: api
+{{- if (.Values.configuration.jobMode) }}
+    targetPort: {{ .Values.api.port }}
+{{- else }}
+    targetPort: {{ .Values.api.cacheport }}
+  publishNotReadyAddresses: true
+{{- end }}
   selector:
     bytewax.io/dataflow-info: {{ .Release.Name }}
     {{- include "bytewax.selectorLabels" . | nindent 4 }}
+{{- end }}

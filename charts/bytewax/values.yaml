@@ -6,7 +6,7 @@ image:
   repository: bytewax.docker.scarf.sh/bytewax/bytewax
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.15.1-python3.9"
+  tag: "0.16.1-python3.9"
 
 imagePullSecrets: []
 
@@ -47,7 +47,9 @@ service:
   port: 9999
 
 api:
+  enabled: true
   port: 3030
+  cacheport: 3033
 
 resources: {}
   # limits:

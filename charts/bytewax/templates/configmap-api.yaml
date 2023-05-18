@@ -1,0 +1,27 @@
+{{- if .Values.api.enabled }}
+apiVersion: v1
+data:
+  default.conf: |-
+    server {
+        listen       {{ .Values.api.cacheport }};
+        listen  [::]:{{ .Values.api.cacheport }};
+        server_name  localhost;
+
+        location / {
+            root   /var/bytewax-api-cache;
+            index  index.html index.htm;
+            rewrite ^/dataflow?$ /dataflow.json break;
+        }
+
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   /var/bytewax-api-cache;
+        }
+    }
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-api
+  namespace: {{ .Release.Namespace }}
+  labels:
+  {{- include "bytewax.labels" . | nindent 4 }}
+{{- end }}

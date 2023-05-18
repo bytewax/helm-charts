@@ -1,5 +1,4 @@
 import json
-import os
 import operator
 from datetime import timedelta
 
@@ -7,27 +6,14 @@ from datetime import timedelta
 import sseclient
 import urllib3
 
-from bytewax import parse
+from bytewax.connectors.stdio import StdOutput
 from bytewax.dataflow import Dataflow
-from bytewax.execution import cluster_main
-from bytewax.inputs import ManualInputConfig
-from bytewax.outputs import StdOutputConfig
-from bytewax.recovery import SqliteRecoveryConfig
-from bytewax.window import SystemClockConfig, TumblingWindowConfig
-from bytewax.tracing import setup_tracing, OtlpTracingConfig
+from bytewax.inputs import PartitionedInput, StatefulSource
+from bytewax.window import SessionWindow, SystemClockConfig
 
-tracer = setup_tracing(
-    tracing_config=OtlpTracingConfig(
-        url=os.getenv("BYTEWAX_OTLP_URL", "grpc://127.0.0.1:4317"),
-        service_name="Tracing-example",
-    ),
-    log_level="TRACE",
-)
 
-def input_builder(worker_index, worker_count, resume_state):
-    # Multiple SSE connections will duplicate the streams, so only
-    # have the first worker generate input.
-    if worker_index == 0:
+class WikiSource(StatefulSource):
+    def __init__(self):
         pool = urllib3.PoolManager()
         resp = pool.request(
             "GET",
@@ -35,13 +21,27 @@ def input_builder(worker_index, worker_count, resume_state):
             preload_content=False,
             headers={"Accept": "text/event-stream"},
         )
-        client = sseclient.SSEClient(resp)
+        self.client = sseclient.SSEClient(resp)
+        self.events = self.client.events()
 
-        # Since there is no way to replay missed SSE data, we're going
-        # to drop missed data. That's fine as long as we know to
-        # interpret the results with that in mind.
-        for event in client.events():
-            yield (None, event.data)
+    def next(self):
+        return next(self.events).data
+
+    def snapshot(self):
+        return None
+
+    def close(self):
+        self.client.close()
+
+
+class WikiStreamInput(PartitionedInput):
+    def list_parts(self):
+        return {"single-part"}
+
+    def build_part(self, for_key, resume_state):
+        assert for_key == "single-part"
+        assert resume_state is None
+        return WikiSource()
 
 
 def initial_count(data_dict):
@@ -54,7 +54,7 @@ def keep_max(max_count, new_count):
 
 
 flow = Dataflow()
-flow.input("inp", ManualInputConfig(input_builder))
+flow.input("inp", WikiStreamInput())
 # "event_json"
 flow.map(json.loads)
 # {"server_name": "server.name", ...}
@@ -63,22 +63,10 @@ flow.map(initial_count)
 flow.reduce_window(
     "sum",
     SystemClockConfig(),
-    TumblingWindowConfig(length=timedelta(seconds=2)),
+    SessionWindow(gap=timedelta(seconds=2)),
     operator.add,
 )
 # ("server.name", sum_per_window)
-flow.stateful_map(
-    "keep_max",
-    lambda: 0,
-    keep_max,
-)
+flow.stateful_map("keep_max", lambda: 0, keep_max)
 # ("server.name", max_per_window)
-flow.capture(StdOutputConfig())
-
-
-if __name__ == "__main__":
-    cluster_main(
-        flow,
-        recovery_config=SqliteRecoveryConfig("."),
-        **parse.proc_env()
-    )
+flow.output("out", StdOutput())

@@ -10,6 +10,7 @@ spec:
   replicas: {{ .Values.configuration.processesCount }}
   selector:
     matchLabels:
+      bytewax.io/dataflow-info: {{ .Release.Name }}
       {{- include "bytewax.selectorLabels" . | nindent 6 }}
   serviceName: "{{ .Release.Name }}"
   podManagementPolicy: "Parallel"
@@ -20,6 +21,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
+        bytewax.io/dataflow-info: {{ .Release.Name }}
         {{- include "bytewax.selectorLabels" . | nindent 8 }}
 {{- with .Values.podLabels }}
 {{ toYaml . | indent 8 }}
@@ -82,6 +84,20 @@ spec:
 {{- end }}
       terminationGracePeriodSeconds: 10
       containers:
+{{- if .Values.api.enabled }}
+      - name: api-cache
+        image: nginxinc/nginx-unprivileged
+        ports:
+        - containerPort: {{ .Values.api.cacheport }}
+          name: api-cache
+        volumeMounts:
+          - name: api-cache
+            mountPath: /var/bytewax-api-cache
+          - name: nginx-rw
+            mountPath: /var/cache/nginx
+          - name: nginx-conf
+            mountPath: /etc/nginx/conf.d
+{{- end }}
       - name: {{ .Values.containerName }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -116,8 +132,14 @@ spec:
           value: "/etc/bytewax/hostfile.txt"
         - name: BYTEWAX_STATEFULSET_NAME
           value: "{{ .Release.Name }}"
+{{- if .Values.api.enabled }}
         - name: BYTEWAX_DATAFLOW_API_ENABLED
           value: "true"
+{{- end }}
+        - name: BYTEWAX_DATAFLOW_API_PORT
+          value: "{{ .Values.api.port }}"
+        - name: BYTEWAX_DATAFLOW_API_CACHE_PATH
+          value: "/var/bytewax-api-cache"
         - name: BYTEWAX_OTLP_URL
 {{- if .Values.customOtlpUrl }}
           value: "{{ .Values.customOtlpUrl }}"
@@ -147,13 +169,26 @@ spec:
         resources:
           {{- toYaml .Values.resources | nindent 12 }}
         securityContext:
-          {{- toYaml .Values.securityContext | nindent 12 }}         
+          {{- toYaml .Values.securityContext | nindent 12 }}
         volumeMounts:
+{{- if .Values.api.enabled }}
+        - name: api-cache
+          mountPath: /var/bytewax-api-cache
+{{- end }}
         - name: hostfile
           mountPath: /etc/bytewax
         - name: working-directory
           mountPath: /var/bytewax/
       volumes:
+{{- if .Values.api.enabled }}
+      - name: api-cache
+        emptyDir: {}
+      - name: nginx-conf
+        configMap:
+          name: {{ .Release.Name }}-api
+      - name: nginx-rw
+        emptyDir: {}
+{{- end }}
       - name: hostfile
         emptyDir: {}
       - name: python-files
