@@ -21,6 +21,16 @@ helm install my-release bytewax/bytewax
 
 This version requires Helm >= 3.1.0.
 
+
+## Dependencies
+
+These are the dependencies which are disabled by default:
+
+- [open-telemetry/opentelemetry-collector](https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-collector)
+- [jaegertracing/jaeger](https://github.com/jaegertracing/helm-charts/tree/main/charts/jaeger)
+
+For more details about this, read [Telemetry](#telemetry) section.
+
 ## Uninstalling the Chart
 
 To uninstall/delete the `my-release` deployment:
@@ -35,8 +45,8 @@ The command removes all the Kubernetes components associated with the chart and 
 
 | Parameter                                 | Description                                   | Default                                                 |
 |-------------------------------------------|-----------------------------------------------|---------------------------------------------------------|
-| `image.repository`                        | Image repository                              | `bytewax/bytewax`                                       |
-| `image.tag`                               | Image tag                                     | `0.10.0-python3.9`                                      |
+| `image.repository`                        | Image repository                              | `bytewax.docker.scarf.sh/bytewax/bytewax`                                       |
+| `image.tag`                               | Image tag                                     | `0.16.1-python3.9`                                      |
 | `image.pullPolicy`                        | Image pull policy                             | `Always`                                                |
 | `imagePullSecrets`                        | Image pull secrets                            | `[]`                                                    |
 | `serviceAccount.create`                   | Create service account                        | `true`                                                  |
@@ -46,8 +56,12 @@ The command removes all the Kubernetes components associated with the chart and 
 | `podLabels`                               | Statefulset/Job pod labels                        | `{}`                                                    |
 | `podAnnotations`                          | Statefulset/Job pod annotations                   | `{}`                                                    |
 | `podSecurityContext`                      | Statefulset/Job pod securityContext               | `{"runAsNonRoot": true, "runAsUser": 65532, "runAsGroup": 3000, "fsGroup": 2000}`  |
+| `containerName`                           | Statefulset/Job application container name  | `process`|
 | `securityContext`                         | Statefulset/Job containers securityContext        | `{"allowPrivilegeEscalation": false, "capabilities": {"drop": ["ALL"], "add": ["NET_BIND_SERVICE"]}, "readOnlyRootFilesystem": true }`|
-| `service.port`                            | Kubernetes port where service is exposed      | `9999`                                                  |
+| `service.port`                            | Kubernetes port where intertal bytewax service is exposed   | `9999`                                    |
+| `api.enabled`                             | Create resources related to dataflow api      | `true`                                                  |
+| `api.port`                                | Kubernetes port where dataflow api service is exposed      | `3030`                                     |
+| `api.cacheport`                           | Kubernetes port where dataflow api cache service is exposed      | `3033`                               |
 | `resources`                               | CPU/Memory resource requests/limits           | `{}`                                                    |
 | `nodeSelector`                            | Node labels for pod assignment                | `{}`                                                    |
 | `tolerations`                             | Toleration labels for pod assignment          | `[]`                                                    |
@@ -62,12 +76,14 @@ The command removes all the Kubernetes components associated with the chart and 
 | `configuration.processesCount`            | Number of concurrent processes to run         | `1`                                                     |
 | `configuration.workersPerProcess`         | Number of workers per process                 | `1`                                                     |
 | `configuration.jobMode`                   | Create a kubernetes Job resource instead of a Statefulset (use this for batch processing) - Kubernetes version required: 1.24 or superior | `false` |
-| `configuration.keepAlive`                 | Keep the container process alive after dataflow executing ended to prevent a container restart by Kubernetes (ignored when .jobMode is true) | `true` |
+| `configuration.keepAlive`                 | Keep the container process alive after dataflow executing ended to prevent a container restart by Kubernetes (ignored when .jobMode is true) | `false` |
 | `configuration.configMap.create`          | Create a configmap to store python file(s)    | `true`                                                  |
 | `configuration.configMap.customName`      | Configmap which has python file(s) created manually | ``                                                |
 | `configuration.configMap.files.pattern`   | Files to store in the ConfigMap to be created | `examples/*`                                            |
 | `configuration.configMap.files.tarName`   | Tar file to store in the ConfigMap to be created | ``                                                   |
-
+| `customOtlpUrl`                           | OTLP Endpoint URL                             | ``                                                      |
+| `opentelemetry-collector.enabled`         | Install OpenTelemetry Collector Helm Chart    | `false`                                                 |
+| `jaeger.enabled`                          | Install Jaeger Helm Chart                     | `false`                                                 |
 
 ### Example running basic.py obtained from a Configmap created by Helm
 
@@ -166,6 +182,74 @@ $ helm upgrade --install my-dataflow ./bytewax \
   --set configuration.configMap.create=false \
   --set configuration.configMap.customName=my-configmap
 ```
+
+## Tracing
+
+Bytewax is instrumented to offer observability of your dataflow. You can read more about it [here](https://bytewax.io/docs/getting-started/observability).
+
+The Bytewax helm chart can install OpenTelemetry Collector and Jaeger both configured to work together with your dataflow traces.
+
+With this simple configuration you will have an OpenTelemetry Collector receiving your dataflow traces and exporting them to a Jaeger instance:
+
+```yaml
+opentelemetry-collector:
+  enabled: true
+jaeger:
+  enabled: true
+```
+
+Note that your dataflow will have an environment variable `BYTEWAX_OTLP_URL` filled with the corresponding OpenTelemetry Collector endpoint created by the helm chart installation.
+
+Following that example, to see the dataflow traces in Jaeger UI, you need to run this and then open `http://localhost:8088` in a web browser:
+
+```bash
+kubectl port-forward svc/<YOUR_RELEASE_NAME>-jaeger-query 8088:80
+```
+
+You can change OpenTelemetry Collector and Jaeger sub-charts configuration nesting their values in `opentelemetry-collector` or `jaeger` respectively. These are some examples:
+
+*OpenTelemetry Collector sending traces to an existing Jaeger installation running on the same Kubernetes Cluster:*
+
+```yaml
+opentelemetry-collector:
+  enabled: true
+  mode: deployment
+  config:
+    exporters:
+      jaeger:
+        endpoint: "jaeger-collector.common-infra.svc.cluster.local:14250"
+        tls:
+          insecure: true
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: []
+          exporters: [logging,jaeger]
+
+jaeger:
+  enabled: false
+```
+
+*OpenTelemetry Collector with default values and Jaeger storing to one-node ElasticSearch cluster:*
+
+```yaml
+opentelemetry-collector:
+  enabled: true
+jaeger:
+  enabled: true
+  elasticsearch:
+    replicas: 1
+    minimumMasterNodes: 1
+```
+
+In case you want to send the dataflow traces to an existing OTLP endpoint, you just need to define the `customOtlpUrl` field in your values, for example:
+
+```yaml
+customOtlpUrl: https://otlpcollector.myorganization.com:4317
+```
+
+In that case, you should keep `opentelemetry-collector.enabled` and `jaeger.enabled` with default values `false` because they are unnecessary.
 
 ## How to securely reference secrets in your code
 
