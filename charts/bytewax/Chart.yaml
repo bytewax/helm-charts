@@ -2,8 +2,8 @@ apiVersion: v2
 name: bytewax
 description: A Helm chart for Bytewax
 type: application
-version: 0.6.0
-appVersion: "0.16.1"
+version: 0.6.1
+appVersion: "0.16.2"
 icon: https://bytewax.io/assets/img/favicon.png
 dependencies:
 - condition: opentelemetry-collector.enabled

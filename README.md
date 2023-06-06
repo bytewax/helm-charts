@@ -46,7 +46,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | Parameter                                 | Description                                   | Default                                                 |
 |-------------------------------------------|-----------------------------------------------|---------------------------------------------------------|
 | `image.repository`                        | Image repository                              | `bytewax.docker.scarf.sh/bytewax/bytewax`                                       |
-| `image.tag`                               | Image tag                                     | `0.16.1-python3.9`                                      |
+| `image.tag`                               | Image tag                                     | `0.16.2-python3.9`                                      |
 | `image.pullPolicy`                        | Image pull policy                             | `Always`                                                |
 | `imagePullSecrets`                        | Image pull secrets                            | `[]`                                                    |
 | `serviceAccount.create`                   | Create service account                        | `true`                                                  |
@@ -72,7 +72,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `envRenderSecret`                         | Sensible environment variables passed to pods and stored as secret | `{}`                               |
 | `extraSecretMounts`                       | Secret mounts to get secrets from files instead of env vars | `[]`                                      |
 | `extraVolumeMounts`                       | Additional volume mounts                      | `[]`                                                    |
-| `configuration.pythonFileName`            | Path of the python file to run                | `basic.py`                                              |
+| `configuration.pythonFileName`            | Path of the python file to run                | `simple.py`                                             |
 | `configuration.processesCount`            | Number of concurrent processes to run         | `1`                                                     |
 | `configuration.workersPerProcess`         | Number of workers per process                 | `1`                                                     |
 | `configuration.jobMode`                   | Create a kubernetes Job resource instead of a Statefulset (use this for batch processing) - Kubernetes version required: 1.24 or superior | `false` |
@@ -81,6 +81,13 @@ The command removes all the Kubernetes components associated with the chart and 
 | `configuration.configMap.customName`      | Configmap which has python file(s) created manually | ``                                                |
 | `configuration.configMap.files.pattern`   | Files to store in the ConfigMap to be created | `examples/*`                                            |
 | `configuration.configMap.files.tarName`   | Tar file to store in the ConfigMap to be created | ``                                                   |
+| `configuration.recovery.enabled`          | Enable Recovery                               | `false`                                                 |
+| `configuration.recovery.persistence.accessModes` | Persistence access modes               | `[ReadWriteOnce]`                                       |
+| `configuration.recovery.persistence.size` | Size of persistent volume claim               | `10Gi`                                                  |
+| `configuration.recovery.persistence.annotations` | PersistentVolumeClaim annotations      | `{}`                                                    |
+| `configuration.recovery.persistence.finalizers` | PersistentVolumeClaim finalizers        | `[ "kubernetes.io/pvc-protection" ]`                    |
+| `configuration.recovery.persistence.extraPvcLabels` | Extra labels to apply to the PVC    | `{}`                                                    |
+| `configuration.recovery.persistence.storageClassName` | Type of persistent volume claim   | `nil`                                                   |
 | `customOtlpUrl`                           | OTLP Endpoint URL                             | ``                                                      |
 | `opentelemetry-collector.enabled`         | Install OpenTelemetry Collector Helm Chart    | `false`                                                 |
 | `jaeger.enabled`                          | Install Jaeger Helm Chart                     | `false`                                                 |

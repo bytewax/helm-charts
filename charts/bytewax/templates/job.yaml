@@ -125,6 +125,10 @@ spec:
 {{- else }}
           value: "http://{{ .Release.Name }}-opentelemetry-collector:4317"
 {{- end }}
+{{- if .Values.configuration.recovery.enabled }}
+        - name: BYTEWAX_SQLITE_DIRECTORY
+          value: /var/recovery
+{{- end }}
 {{- range $key, $value := .Values.env }}
         - name: "{{ tpl $key $ }}"
           value: "{{ tpl (print $value) $ }}"
@@ -154,6 +158,10 @@ spec:
           mountPath: /etc/bytewax
         - name: working-directory
           mountPath: /var/bytewax/
+{{- if .Values.configuration.recovery.enabled }}
+        - name: recovery
+          mountPath: /var/recovery
+{{- end }}
       volumes:
       - name: hostfile
         emptyDir: {}
@@ -191,5 +199,10 @@ spec:
         {{- else }}
         emptyDir: {}
         {{- end }}
+{{- end }}
+{{- if .Values.configuration.recovery.enabled }}
+      - name: recovery
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}
 {{- end }}
 {{- end }}

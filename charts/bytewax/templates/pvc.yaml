@@ -1,0 +1,34 @@
+{{- if and .Values.configuration.jobMode .Values.configuration.recovery.enabled}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "bytewax.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/resource-policy: "keep"
+  {{- with .Values.configuration.recovery.persistence.annotations  }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.configuration.recovery.persistence.finalizers  }}
+  finalizers:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    {{- range .Values.configuration.recovery.persistence.accessModes }}
+    - {{ . | quote }}
+    {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.configuration.recovery.persistence.size | quote }}
+  {{- with .Values.configuration.recovery.persistence.storageClassName }}
+  storageClassName: {{ . }}
+  {{- end }}
+  {{- with .Values.configuration.recovery.persistence.selectorLabels }}
+  selector:
+    matchLabels:
+    {{- toYaml . | nindent 6 }}
+  {{- end }}
+{{- end }}
