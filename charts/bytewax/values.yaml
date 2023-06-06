@@ -6,7 +6,7 @@ image:
   repository: bytewax.docker.scarf.sh/bytewax/bytewax
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.16.1-python3.9"
+  tag: "0.16.2-python3.9"
 
 imagePullSecrets: []
 
@@ -116,17 +116,33 @@ extraVolumeMounts: []
   #   hostPath: /usr/shared/
 
 configuration:
-  pythonFileName: "k8s_basic.py"
+  pythonFileName: "simple.py"
   processesCount: 1
   workersPerProcess: 1
   keepAlive: false
   jobMode: false
   configMap:
     create: true
-    customName:  
+    customName:
     files:
       pattern: "examples/*"
       tarName: ""
+  recovery:
+    enabled: false
+    ## Enable recovery using Kubernetes Persistent Volume Claims to store Sqlite files
+    ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+    ##
+    persistence:
+      # storageClassName: default
+      accessModes:
+        - ReadWriteOnce
+      size: 10Gi
+      # annotations: {}
+      finalizers:
+        - kubernetes.io/pvc-protection
+      # selectorLabels: {}
+      ## Extra labels to apply to a PVC.
+      extraPvcLabels: {}
 
 ## Configuration examples ##
 #

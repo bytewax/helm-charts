@@ -8,6 +8,36 @@ metadata:
     {{- include "bytewax.labels" . | nindent 4 }}  
 spec:
   replicas: {{ .Values.configuration.processesCount }}
+{{- if .Values.configuration.recovery.enabled }}
+  volumeClaimTemplates:
+  - metadata:
+      name: recovery
+      annotations:
+        helm.sh/resource-policy: "keep"
+      {{- with .Values.configuration.recovery.persistence.annotations  }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.configuration.recovery.persistence.finalizers  }}
+      finalizers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      accessModes:
+        {{- range .Values.configuration.recovery.persistence.accessModes }}
+        - {{ . | quote }}
+        {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.configuration.recovery.persistence.size }}
+  {{- with .Values.configuration.recovery.persistence.storageClassName }}
+      storageClassName: {{ . }}
+  {{- end }}
+      {{- with .Values.configuration.recovery.persistence.selectorLabels }}
+      selector:
+        matchLabels:
+        {{- toYaml . | nindent 10 }}
+      {{- end }}
+{{- end }}
   selector:
     matchLabels:
       bytewax.io/dataflow-info: {{ .Release.Name }}
@@ -25,7 +55,7 @@ spec:
         {{- include "bytewax.selectorLabels" . | nindent 8 }}
 {{- with .Values.podLabels }}
 {{ toYaml . | indent 8 }}
-{{- end }}      
+{{- end }}
     spec:
       affinity:
         {{- toYaml .Values.affinity | nindent 8 }}
@@ -146,6 +176,10 @@ spec:
 {{- else }}
           value: "http://{{ .Release.Name }}-opentelemetry-collector:4317"
 {{- end }}
+{{- if .Values.configuration.recovery.enabled }}
+        - name: BYTEWAX_SQLITE_DIRECTORY
+          value: /var/recovery
+{{- end }}
 {{- range $key, $value := .Values.env }}
         - name: "{{ tpl $key $ }}"
           value: "{{ tpl (print $value) $ }}"
@@ -179,6 +213,10 @@ spec:
           mountPath: /etc/bytewax
         - name: working-directory
           mountPath: /var/bytewax/
+{{- if .Values.configuration.recovery.enabled }}
+        - name: recovery
+          mountPath: /var/recovery
+{{- end }}
       volumes:
 {{- if .Values.api.enabled }}
       - name: api-cache
