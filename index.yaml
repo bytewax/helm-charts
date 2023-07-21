@@ -3,6 +3,26 @@ entries:
   bytewax:
   - apiVersion: v2
     appVersion: 0.16.2
+    created: "2023-07-21T16:50:00.320651447Z"
+    dependencies:
+    - condition: opentelemetry-collector.enabled
+      name: opentelemetry-collector
+      repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+      version: 0.36.*
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.62.*
+    description: A Helm chart for Bytewax
+    digest: 5a0e11c042823c459e043c5f311ca58dd484958238df55ebb60b3888a7cb320a
+    icon: https://bytewax.io/assets/img/favicon.png
+    name: bytewax
+    type: application
+    urls:
+    - https://github.com/bytewax/helm-charts/releases/download/bytewax-0.6.2/bytewax-0.6.2.tgz
+    version: 0.6.2
+  - apiVersion: v2
+    appVersion: 0.16.2
     created: "2023-06-06T15:39:55.988327008Z"
     dependencies:
     - condition: opentelemetry-collector.enabled
@@ -251,4 +271,4 @@ entries:
     urls:
     - https://github.com/bytewax/helm-charts/releases/download/bytewax-0.1.0/bytewax-0.1.0.tgz
     version: 0.1.0
-generated: "2023-06-06T15:39:55.988560119Z"
+generated: "2023-07-21T16:50:00.320768149Z"
