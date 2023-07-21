@@ -217,6 +217,12 @@ spec:
         - name: recovery
           mountPath: /var/recovery
 {{- end }}
+{{- range .Values.extraSecretMounts }}
+        - name: {{ .name }}
+          mountPath: {{ .mountPath }}
+          subPath: {{ .subPath }}
+          readOnly: {{ .readOnly }}
+{{- end }}
       volumes:
 {{- if .Values.api.enabled }}
       - name: api-cache
