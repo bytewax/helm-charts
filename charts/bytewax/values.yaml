@@ -6,7 +6,7 @@ image:
   repository: bytewax.docker.scarf.sh/bytewax/bytewax
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.16.2-python3.9"
+  tag: "0.17.0-python3.9"
 
 imagePullSecrets: []
 
@@ -129,6 +129,7 @@ configuration:
       tarName: ""
   recovery:
     enabled: false
+    partsCount: 1
     ## Enable recovery using Kubernetes Persistent Volume Claims to store Sqlite files
     ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
     ##
