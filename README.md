@@ -46,7 +46,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | Parameter                                 | Description                                   | Default                                                 |
 |-------------------------------------------|-----------------------------------------------|---------------------------------------------------------|
 | `image.repository`                        | Image repository                              | `bytewax.docker.scarf.sh/bytewax/bytewax`                                       |
-| `image.tag`                               | Image tag                                     | `0.16.2-python3.9`                                      |
+| `image.tag`                               | Image tag                                     | `0.17.0-python3.9`                                      |
 | `image.pullPolicy`                        | Image pull policy                             | `Always`                                                |
 | `imagePullSecrets`                        | Image pull secrets                            | `[]`                                                    |
 | `serviceAccount.create`                   | Create service account                        | `true`                                                  |
@@ -82,6 +82,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `configuration.configMap.files.pattern`   | Files to store in the ConfigMap to be created | `examples/*`                                            |
 | `configuration.configMap.files.tarName`   | Tar file to store in the ConfigMap to be created | ``                                                   |
 | `configuration.recovery.enabled`          | Enable Recovery                               | `false`                                                 |
+| `configuration.recovery.partsCount`       | Number of recovery parts                      | `1`                                                     |
 | `configuration.recovery.persistence.accessModes` | Persistence access modes               | `[ReadWriteOnce]`                                       |
 | `configuration.recovery.persistence.size` | Size of persistent volume claim               | `10Gi`                                                  |
 | `configuration.recovery.persistence.annotations` | PersistentVolumeClaim annotations      | `{}`                                                    |

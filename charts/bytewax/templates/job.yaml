@@ -36,6 +36,27 @@ spec:
       tolerations:
         {{- toYaml .Values.tolerations | nindent 8 }}
       initContainers:
+{{- if .Values.configuration.recovery.enabled }}
+      - name: init-recovery
+        securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+              - NET_BIND_SERVICE
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+        env:
+        - name: BYTEWAX_RECOVERY_PARTS
+          value: "{{ .Values.configuration.recovery.partsCount }}"
+        - name: BYTEWAX_RECOVERY_DIRECTORY
+          value: /var/recovery
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        command: ["sh","-c","sh ./entrypoint-recovery.sh"]
+        volumeMounts:
+        - name: recovery
+          mountPath: /var/recovery
+{{- end }}
       - name: init-hostfile
         securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}      
@@ -126,7 +147,7 @@ spec:
           value: "http://{{ .Release.Name }}-opentelemetry-collector:4317"
 {{- end }}
 {{- if .Values.configuration.recovery.enabled }}
-        - name: BYTEWAX_SQLITE_DIRECTORY
+        - name: BYTEWAX_RECOVERY_DIRECTORY
           value: /var/recovery
 {{- end }}
 {{- range $key, $value := .Values.env }}
@@ -203,6 +224,6 @@ spec:
 {{- if .Values.configuration.recovery.enabled }}
       - name: recovery
         persistentVolumeClaim:
-          claimName: {{ .Release.Name }}
+          claimName: {{ .Release.Name }}-recovery
 {{- end }}
 {{- end }}
