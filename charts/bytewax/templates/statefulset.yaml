@@ -55,6 +55,7 @@ spec:
         - name: BYTEWAX_RECOVERY_DIRECTORY
           value: /var/recovery
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         command: ["sh","-c","sh ./entrypoint-recovery.sh"]
         volumeMounts:
         - name: recovery
