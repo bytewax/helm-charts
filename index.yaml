@@ -2,6 +2,30 @@ apiVersion: v1
 entries:
   bytewax:
   - apiVersion: v2
+    appVersion: 0.18.1
+    created: "2024-02-01T18:28:53.942766107Z"
+    dependencies:
+    - condition: opentelemetry-collector.enabled
+      name: opentelemetry-collector
+      repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+      version: 0.36.*
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.62.*
+    - condition: kubePrometheusStack.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 56.2.*
+    description: A Helm chart for Bytewax
+    digest: 65110cb6f26812ea401e7ecbc8ad47e841c8ddc85ad75ed558d995be8790aff5
+    icon: https://bytewax.io/assets/img/favicon.png
+    name: bytewax
+    type: application
+    urls:
+    - https://github.com/bytewax/helm-charts/releases/download/bytewax-0.8.0/bytewax-0.8.0.tgz
+    version: 0.8.0
+  - apiVersion: v2
     appVersion: 0.17.0
     created: "2023-12-19T12:46:58.715113938Z"
     dependencies:
@@ -311,4 +335,4 @@ entries:
     urls:
     - https://github.com/bytewax/helm-charts/releases/download/bytewax-0.1.0/bytewax-0.1.0.tgz
     version: 0.1.0
-generated: "2023-12-19T12:46:58.715249953Z"
+generated: "2024-02-01T18:28:53.942930973Z"
