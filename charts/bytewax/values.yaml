@@ -6,7 +6,7 @@ image:
   repository: bytewax.docker.scarf.sh/bytewax/bytewax
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.17.0-python3.9"
+  tag: "0.18.1-python3.9"
 
 imagePullSecrets: []
 
@@ -130,6 +130,8 @@ configuration:
   recovery:
     enabled: false
     partsCount: 1
+    snapshotInterval: 30
+    backupInterval: 30
     ## Enable recovery using Kubernetes Persistent Volume Claims to store Sqlite files
     ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
     ##
@@ -242,3 +244,11 @@ jaeger:
     elasticsearch: true
   storage:
     type: elasticsearch
+
+kubePrometheusStack:
+  enabled: false
+
+podMonitor:
+  enabled: false
+  selector:
+    release: my-prometheus

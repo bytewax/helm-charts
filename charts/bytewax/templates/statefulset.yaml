@@ -36,6 +36,10 @@ spec:
       serviceAccountName: {{ include "bytewax.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}
       tolerations:
         {{- toYaml .Values.tolerations | nindent 8 }}
       initContainers:
@@ -54,6 +58,10 @@ spec:
           value: "{{ .Values.configuration.recovery.partsCount }}"
         - name: BYTEWAX_RECOVERY_DIRECTORY
           value: /var/recovery
+        - name: BYTEWAX_SNAPSHOT_INTERVAL
+          value: "{{ .Values.configuration.recovery.snapshotInterval }}"
+        - name: BYTEWAX_RECOVERY_BACKUP_INTERVAL
+          value: "{{ .Values.configuration.recovery.backupInterval }}"
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command: ["sh","-c","sh ./entrypoint-recovery.sh"]
@@ -171,6 +179,10 @@ spec:
 {{- if .Values.configuration.recovery.enabled }}
         - name: BYTEWAX_RECOVERY_DIRECTORY
           value: /var/recovery
+        - name: BYTEWAX_SNAPSHOT_INTERVAL
+          value: "{{ .Values.configuration.recovery.snapshotInterval }}"
+        - name: BYTEWAX_RECOVERY_BACKUP_INTERVAL
+          value: "{{ .Values.configuration.recovery.backupInterval }}"
 {{- end }}
 {{- range $key, $value := .Values.env }}
         - name: "{{ tpl $key $ }}"

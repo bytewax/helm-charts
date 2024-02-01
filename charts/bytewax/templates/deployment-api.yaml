@@ -18,6 +18,10 @@ spec:
         bytewax.io/dataflow-info: {{ .Release.Name }}
         {{- include "bytewax.selectorLabels" . | nindent 8 }}
     spec:
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}
       initContainers:
         - command:
             - sh

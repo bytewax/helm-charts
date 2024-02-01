@@ -2,8 +2,8 @@ apiVersion: v2
 name: bytewax
 description: A Helm chart for Bytewax
 type: application
-version: 0.7.1
-appVersion: "0.17.0"
+version: 0.8.0
+appVersion: "0.18.1"
 icon: https://bytewax.io/assets/img/favicon.png
 dependencies:
 - condition: opentelemetry-collector.enabled
@@ -14,3 +14,7 @@ dependencies:
   name: jaeger
   repository: https://jaegertracing.github.io/helm-charts
   version: 0.62.*
+- condition: kubePrometheusStack.enabled
+  name: kube-prometheus-stack
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 56.2.*
