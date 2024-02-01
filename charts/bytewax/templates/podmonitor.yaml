@@ -1,0 +1,25 @@
+{{- if or .Values.podMonitor.enabled .Values.kubePrometheusStack.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+{{- if .Values.podMonitor.enabled }}
+{{ toYaml .Values.podMonitor.selector | indent 4 }}
+{{- else }}
+    release: {{ .Release.Name }}
+{{- end }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: bytewax
+      bytewax.io/dataflow-info: {{ .Release.Name }}
+{{- if (.Values.configuration.jobMode) }}
+      job-name: {{ .Release.Name }}
+{{- end}}
+  podMetricsEndpoints:
+  - port: api
+    path: /metrics
+{{- end }}

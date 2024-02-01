@@ -1,9 +1,10 @@
 # ./simple.py
+import bytewax.operators as op
+from bytewax.testing import TestingSource
 from bytewax.dataflow import Dataflow
-from bytewax.testing import TestingInput
-from bytewax.connectors.stdio import StdOutput
+from bytewax.connectors.stdio import StdOutSink
 
-flow = Dataflow()
-flow.input("inp", TestingInput(range(99999999)))
-flow.map(lambda item: item + 1)
-flow.output("out", StdOutput())
+flow = Dataflow("simple")
+
+out = op.input("inp1", flow, TestingSource(range(99999999)))
+op.output("out", out, StdOutSink())

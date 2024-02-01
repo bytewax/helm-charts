@@ -1,72 +1,86 @@
 import json
-import operator
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
+from typing import List, Optional, Tuple
 
-# pip install sseclient-py urllib3
-import sseclient
-import urllib3
+import bytewax.operators as op
+import bytewax.operators.window as win
 
-from bytewax.connectors.stdio import StdOutput
+# pip install aiohttp-sse-client
+from aiohttp_sse_client.client import EventSource
+from bytewax.connectors.stdio import StdOutSink
 from bytewax.dataflow import Dataflow
-from bytewax.inputs import PartitionedInput, StatefulSource
-from bytewax.window import SessionWindow, SystemClockConfig
+from bytewax.inputs import FixedPartitionedSource, StatefulSourcePartition, batch_async
+from bytewax.operators.window import SystemClockConfig, TumblingWindow
 
 
-class WikiSource(StatefulSource):
+async def _sse_agen(url):
+    async with EventSource(url) as source:
+        async for event in source:
+            yield event.data
+
+
+class WikiPartition(StatefulSourcePartition[str, None]):
     def __init__(self):
-        pool = urllib3.PoolManager()
-        resp = pool.request(
-            "GET",
-            "https://stream.wikimedia.org/v2/stream/recentchange/",
-            preload_content=False,
-            headers={"Accept": "text/event-stream"},
-        )
-        self.client = sseclient.SSEClient(resp)
-        self.events = self.client.events()
+        agen = _sse_agen("https://stream.wikimedia.org/v2/stream/recentchange")
+        # Gather up to 0.25 sec of or 1000 items.
+        self._batcher = batch_async(agen, timedelta(seconds=0.25), 1000)
 
-    def next(self):
-        return next(self.events).data
+    def next_batch(self, _sched: datetime) -> List[str]:
+        return next(self._batcher)
 
-    def snapshot(self):
+    def snapshot(self) -> None:
         return None
 
-    def close(self):
-        self.client.close()
 
-
-class WikiStreamInput(PartitionedInput):
+class WikiSource(FixedPartitionedSource[str, None]):
     def list_parts(self):
-        return {"single-part"}
+        return ["single-part"]
 
-    def build_part(self, for_key, resume_state):
-        assert for_key == "single-part"
-        assert resume_state is None
-        return WikiSource()
+    def build_part(self, _now, _for_key, _resume_state):
+        return WikiPartition()
 
 
-def initial_count(data_dict):
-    return data_dict["server_name"], 1
+flow = Dataflow("wikistream")
+inp = op.input("inp", flow, WikiSource())
+inp = op.map("load_json", inp, json.loads)
+# { "server_name": ..., ... }
 
 
-def keep_max(max_count, new_count):
-    new_max = max(max_count, new_count)
-    return new_max, new_max
+def get_server_name(data_dict):
+    return data_dict["server_name"]
 
 
-flow = Dataflow()
-flow.input("inp", WikiStreamInput())
-# "event_json"
-flow.map(json.loads)
-# {"server_name": "server.name", ...}
-flow.map(initial_count)
-# ("server.name", 1)
-flow.reduce_window(
-    "sum",
+server_counts = win.count_window(
+    "count",
+    inp,
     SystemClockConfig(),
-    SessionWindow(gap=timedelta(seconds=2)),
-    operator.add,
+    TumblingWindow(
+        length=timedelta(seconds=2), align_to=datetime(2023, 1, 1, tzinfo=timezone.utc)
+    ),
+    get_server_name,
 )
-# ("server.name", sum_per_window)
-flow.stateful_map("keep_max", lambda: 0, keep_max)
+# ("server.name", count_per_window)
+
+
+def keep_max(max_count: Optional[int], new_count: int) -> Tuple[int, int]:
+    if max_count is None:
+        new_max = new_count
+    else:
+        new_max = max(max_count, new_count)
+    # print(f"Just got {new_count}, old max was {max_count}, new max is {new_max}")
+    return (new_max, new_max)
+
+
+max_count_per_window = op.stateful_map(
+    "keep_max", server_counts, lambda: None, keep_max
+)
 # ("server.name", max_per_window)
-flow.output("out", StdOutput())
+
+
+def format_nice(name_max):
+    server_name, max_per_window = name_max
+    return f"{server_name}, {max_per_window}"
+
+
+out = op.map("format", max_count_per_window, format_nice)
+op.output("out", out, StdOutSink())

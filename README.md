@@ -28,8 +28,9 @@ These are the dependencies which are disabled by default:
 
 - [open-telemetry/opentelemetry-collector](https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-collector)
 - [jaegertracing/jaeger](https://github.com/jaegertracing/helm-charts/tree/main/charts/jaeger)
+- [prometheus-community/kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
 
-For more details about this, read [Telemetry](#telemetry) section.
+For more details about this, read the [Observability](#observability) section.
 
 ## Uninstalling the Chart
 
@@ -46,7 +47,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | Parameter                                 | Description                                   | Default                                                 |
 |-------------------------------------------|-----------------------------------------------|---------------------------------------------------------|
 | `image.repository`                        | Image repository                              | `bytewax.docker.scarf.sh/bytewax/bytewax`                                       |
-| `image.tag`                               | Image tag                                     | `0.17.0-python3.9`                                      |
+| `image.tag`                               | Image tag                                     | `0.18.1-python3.9`                                      |
 | `image.pullPolicy`                        | Image pull policy                             | `Always`                                                |
 | `imagePullSecrets`                        | Image pull secrets                            | `[]`                                                    |
 | `serviceAccount.create`                   | Create service account                        | `true`                                                  |
@@ -83,6 +84,8 @@ The command removes all the Kubernetes components associated with the chart and 
 | `configuration.configMap.files.tarName`   | Tar file to store in the ConfigMap to be created | ``                                                   |
 | `configuration.recovery.enabled`          | Enable Recovery                               | `false`                                                 |
 | `configuration.recovery.partsCount`       | Number of recovery parts                      | `1`                                                     |
+| `configuration.recovery.snapshotInterval` | System time duration in seconds to snapshot state for recovery                      | `30`                                                     |
+| `configuration.recovery.backupInterval`   | System time duration in seconds to keep extra state snapshots around                      | `30`                                                     |
 | `configuration.recovery.persistence.accessModes` | Persistence access modes               | `[ReadWriteOnce]`                                       |
 | `configuration.recovery.persistence.size` | Size of persistent volume claim               | `10Gi`                                                  |
 | `configuration.recovery.persistence.annotations` | PersistentVolumeClaim annotations      | `{}`                                                    |
@@ -92,6 +95,10 @@ The command removes all the Kubernetes components associated with the chart and 
 | `customOtlpUrl`                           | OTLP Endpoint URL                             | ``                                                      |
 | `opentelemetry-collector.enabled`         | Install OpenTelemetry Collector Helm Chart    | `false`                                                 |
 | `jaeger.enabled`                          | Install Jaeger Helm Chart                     | `false`                                                 |
+| `kubePrometheusStack.enabled`             | Install Prometheus Operator, Kube-Metrics, and Grafana | `false`                                                 |
+| `podMonitor.enabled`             | Use an existing Prometheus Operator instead of install a new one with `kubePrometheusStack.enabled` | `false`                                                 |
+| `podMonitor.selector`             | Labels to apply to the PodMonitor resource so the existing Prometheus Operator processes it. | `release: my-prometheus`                                                 |
+
 
 ### Example running basic.py obtained from a Configmap created by Helm
 
@@ -191,9 +198,11 @@ $ helm upgrade --install my-dataflow ./bytewax \
   --set configuration.configMap.customName=my-configmap
 ```
 
-## Tracing
+## Observability
 
-Bytewax is instrumented to offer observability of your dataflow. You can read more about it [here](https://bytewax.io/docs/getting-started/observability).
+Bytewax is instrumented to offer observability of your dataflow. You can read more about it [here](https://bytewax.io/docs/deployment/metrics).
+
+### Tracing
 
 The Bytewax helm chart can install OpenTelemetry Collector and Jaeger both configured to work together with your dataflow traces.
 
@@ -258,6 +267,60 @@ customOtlpUrl: https://otlpcollector.myorganization.com:4317
 ```
 
 In that case, you should keep `opentelemetry-collector.enabled` and `jaeger.enabled` with default values `false` because they are unnecessary.
+
+### Metrics
+
+The Bytewax helm chart can install the Prometheus Operator, Kube-Metris, and Grafana all configured to work together with your dataflow metrics.
+
+With this simple configuration you will have your Dataflow metrics in the Prometheus database, and you can check them in the Grafana UI:
+
+```yaml
+kubePrometheusStack:
+  enabled: true
+```
+
+Following that example, to see the dataflow metrics in Grafana UI, you need to run this and then open `http://localhost:3000` in a web browser:
+
+```bash
+kubectl port-forward svc/<YOUR_RELEASE_NAME>-grafana 3000:80
+```
+
+You can change Prometheus Operator, Kube-Metrics, and Grafana sub-charts configuration nesting their values in `kube-prometheus-stack` or `kube-promethes-stack.kube-state-metrics`, and `kube-prometheus-stack.grafana` respectively. For example:
+
+```yaml
+kubePrometheusStack:
+  enabled: true
+
+kube-prometheus-stack:
+  grafana:
+    replicas: 2
+```
+
+In case you want to instruct an existing Prometheus Operator to scrap the dataflow metrics, you just need to set the `podMonitor.enabled` field to `true` and configure the labels in `podMonitor.selector` in your values.
+
+For example, if the existing Prometheus Operator looks for `PodMonitors` with the label `release=my-prometheus`, your settings should be like this:
+
+```yaml
+podMonitor:
+  enabled: true
+  selector:
+    release: my-prometheus
+```
+
+To check the actual labels looked at by your Prometheus Operator, run this command:
+
+```bash
+kubectl get prometheuses.monitoring.coreos.com --all-namespaces -o jsonpath="{.items[*].spec.podMonitorSelector}"
+```
+
+The output will be something similar to this:
+
+```
+{"matchLabels":{"release":"my-prometheus"}}
+```
+
+In case you use `podMonitor.enabled=true`, you should keep `kubePrometheusStack.enabled` with the default value `false` because it is unnecessary.
+
 
 ## How to securely reference secrets in your code
 
