@@ -39,14 +39,24 @@ op.output("out2", out, StdOutSink())
 # flow.output("out", DirOutput(output_dir, 5, assign_file=int))
 
 
-# We are going to use Waxctl, you can download it from https://bytewax.io/downloads
-# Run these commands in your terminal to run a cluster of two containers:
+# To run this example using helm you need to run the following
+# helm upgrade --install k8s-cluster \
+#   bytewax/bytewax \
+#   --set configuration.pythonFileName=k8s_cluster.py \
+#   --set configuration.processesCount=2 \
+#   --set configuration.configMap.files.tarName=examples.tar \
+#   --set configuration.keepAlive=true
+
+# Also, you could use Waxctl to run the example. For that you can download it from https://bytewax.io/downloads
+# And then, run these commands in your terminal to run a cluster of two containers:
 
 # $ tar -C ./ -cvf cluster.tar examples
 # $ waxctl dataflow deploy ./cluster.tar \
 #     --name k8s-cluster \
 #     --python-file-name examples/k8s_cluster.py \
 #     -p2 --debug --keep-alive=true --yes
+
+# Regardless of how you have executed the example (helm CLI or waxctl):
 
 # Each worker will read the files in
 # ./examples/sample_data/cluster/*.txt which have lines like
