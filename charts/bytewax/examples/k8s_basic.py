@@ -13,7 +13,7 @@ class NumberSource(StatelessSourcePartition):
         self.worker_index = worker_index
         self.iterator = iter(range(max))
 
-    def next_batch(self, worker_index):
+    def next_batch(self):
         time.sleep(1)
         return [f"Worker: {self.worker_index} - {next(self.iterator)}"]
 

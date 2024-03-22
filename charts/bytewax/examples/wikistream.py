@@ -10,7 +10,7 @@ from aiohttp_sse_client.client import EventSource
 from bytewax.connectors.stdio import StdOutSink
 from bytewax.dataflow import Dataflow
 from bytewax.inputs import FixedPartitionedSource, StatefulSourcePartition, batch_async
-from bytewax.operators.window import SystemClockConfig, TumblingWindow
+from bytewax.operators.window import SystemClockConfig, TumblingWindow, WindowMetadata
 
 
 async def _sse_agen(url):
@@ -25,7 +25,7 @@ class WikiPartition(StatefulSourcePartition[str, None]):
         # Gather up to 0.25 sec of or 1000 items.
         self._batcher = batch_async(agen, timedelta(seconds=0.25), 1000)
 
-    def next_batch(self, _sched: datetime) -> List[str]:
+    def next_batch(self) -> List[str]:
         return next(self._batcher)
 
     def snapshot(self) -> None:
@@ -36,7 +36,7 @@ class WikiSource(FixedPartitionedSource[str, None]):
     def list_parts(self):
         return ["single-part"]
 
-    def build_part(self, _now, _for_key, _resume_state):
+    def build_part(self, step_id, for_key, _resume_state):
         return WikiPartition()
 
 
@@ -62,7 +62,10 @@ server_counts = win.count_window(
 # ("server.name", count_per_window)
 
 
-def keep_max(max_count: Optional[int], new_count: int) -> Tuple[int, int]:
+def keep_max(
+    max_count: Optional[int], new_window_count: Tuple[WindowMetadata, int]
+) -> Tuple[Optional[int], int]:
+    _metadata, new_count = new_window_count
     if max_count is None:
         new_max = new_count
     else:
@@ -71,9 +74,7 @@ def keep_max(max_count: Optional[int], new_count: int) -> Tuple[int, int]:
     return (new_max, new_max)
 
 
-max_count_per_window = op.stateful_map(
-    "keep_max", server_counts, lambda: None, keep_max
-)
+max_count_per_window = op.stateful_map("keep_max", server_counts, keep_max)
 # ("server.name", max_per_window)
 
 

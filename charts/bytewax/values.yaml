@@ -3,10 +3,10 @@
 # Declare variables to be passed into your templates.
 
 image:
-  repository: bytewax.docker.scarf.sh/bytewax/bytewax
+  repository: bytewax/bytewax
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.18.1-python3.9"
+  tag: "0.19.0-python3.9"
 
 imagePullSecrets: []
 
@@ -136,6 +136,9 @@ configuration:
     ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
     ##
     persistence:
+      hostPath:
+        enabled: false
+        path: ""
       # storageClassName: default
       accessModes:
         - ReadWriteOnce
