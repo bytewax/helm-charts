@@ -46,8 +46,8 @@ The command removes all the Kubernetes components associated with the chart and 
 
 | Parameter                                 | Description                                   | Default                                                 |
 |-------------------------------------------|-----------------------------------------------|---------------------------------------------------------|
-| `image.repository`                        | Image repository                              | `bytewax.docker.scarf.sh/bytewax/bytewax`                                       |
-| `image.tag`                               | Image tag                                     | `0.18.1-python3.9`                                      |
+| `image.repository`                        | Image repository                              | `bytewax/bytewax`                                       |
+| `image.tag`                               | Image tag                                     | `0.19.0-python3.9`                                      |
 | `image.pullPolicy`                        | Image pull policy                             | `Always`                                                |
 | `imagePullSecrets`                        | Image pull secrets                            | `[]`                                                    |
 | `serviceAccount.create`                   | Create service account                        | `true`                                                  |
@@ -92,6 +92,8 @@ The command removes all the Kubernetes components associated with the chart and 
 | `configuration.recovery.persistence.finalizers` | PersistentVolumeClaim finalizers        | `[ "kubernetes.io/pvc-protection" ]`                    |
 | `configuration.recovery.persistence.extraPvcLabels` | Extra labels to apply to the PVC    | `{}`                                                    |
 | `configuration.recovery.persistence.storageClassName` | Type of persistent volume claim   | `nil`                                                   |
+| `configuration.recovery.persistence.hostPath.enabled` | Use hostPath instead of PersistentVolumeClaim   | `false`                                                   |
+| `configuration.recovery.persistence.hostPath.path` | Absolute path on the host to store recovery files   | ``                                                   |
 | `customOtlpUrl`                           | OTLP Endpoint URL                             | ``                                                      |
 | `opentelemetry-collector.enabled`         | Install OpenTelemetry Collector Helm Chart    | `false`                                                 |
 | `jaeger.enabled`                          | Install Jaeger Helm Chart                     | `false`                                                 |

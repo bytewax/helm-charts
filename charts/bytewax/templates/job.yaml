@@ -159,9 +159,9 @@ spec:
         - name: BYTEWAX_RECOVERY_DIRECTORY
           value: /var/recovery
         - name: BYTEWAX_SNAPSHOT_INTERVAL
-          value: {{ .Values.configuration.recovery.snapshotInterval }}
+          value: "{{ .Values.configuration.recovery.snapshotInterval }}"
         - name: BYTEWAX_RECOVERY_BACKUP_INTERVAL
-          value: {{ .Values.configuration.recovery.backupInterval }}
+          value: "{{ .Values.configuration.recovery.backupInterval }}"
 {{- end }}
 {{- range $key, $value := .Values.env }}
         - name: "{{ tpl $key $ }}"
@@ -236,7 +236,13 @@ spec:
 {{- end }}
 {{- if .Values.configuration.recovery.enabled }}
       - name: recovery
+{{- if .Values.configuration.recovery.persistence.hostPath.enabled }}
+        hostPath:
+          path: {{ .Values.configuration.recovery.persistence.hostPath.path | quote }}
+          type: DirectoryOrCreate
+{{- else }}
         persistentVolumeClaim:
           claimName: {{ .Release.Name }}-recovery
+{{- end }}
 {{- end }}
 {{- end }}

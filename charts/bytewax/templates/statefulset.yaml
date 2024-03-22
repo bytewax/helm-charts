@@ -34,8 +34,10 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "bytewax.serviceAccountName" . }}
+{{- if not .Values.configuration.recovery.persistence.hostPath.enabled }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+{{- end }}
     {{- if .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
@@ -45,6 +47,7 @@ spec:
       initContainers:
 {{- if .Values.configuration.recovery.enabled }}
       - name: init-recovery
+{{- if not .Values.configuration.recovery.persistence.hostPath.enabled }}
         securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -53,6 +56,7 @@ spec:
               drop:
               - ALL
             readOnlyRootFilesystem: true
+{{- end }}
         env:
         - name: BYTEWAX_RECOVERY_PARTS
           value: "{{ .Values.configuration.recovery.partsCount }}"
@@ -206,8 +210,10 @@ spec:
 {{- end }}
         resources:
           {{- toYaml .Values.resources | nindent 12 }}
+{{- if not .Values.configuration.recovery.persistence.hostPath.enabled }}
         securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}
+{{- end }}
         volumeMounts:
 {{- if .Values.api.enabled }}
         - name: api-cache
@@ -276,7 +282,13 @@ spec:
 {{- end }}
 {{- if .Values.configuration.recovery.enabled }}
       - name: recovery
+{{- if .Values.configuration.recovery.persistence.hostPath.enabled }}
+        hostPath:
+          path: {{ .Values.configuration.recovery.persistence.hostPath.path | quote }}
+          type: DirectoryOrCreate
+{{- else }}
         persistentVolumeClaim:
           claimName: {{ .Release.Name }}-recovery
+{{- end }}
 {{- end }}
 {{- end }}
